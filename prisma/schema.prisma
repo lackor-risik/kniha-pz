@@ -1,0 +1,298 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USERS & AUTH
+// ============================================================================
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+model Member {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  googleSub   String?  @unique @map("google_sub")
+  displayName String   @map("display_name")
+  avatarUrl   String?  @map("avatar_url")
+  role        Role     @default(MEMBER)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  visits            Visit[]
+  announcements     Announcement[]
+  announcementReads AnnouncementRead[]
+  pushSubscriptions PushSubscription[]
+  cabinBookings     CabinBooking[]
+
+  @@map("members")
+}
+
+// ============================================================================
+// LOCALITIES
+// ============================================================================
+
+model Locality {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  visits         Visit[]
+  huntingCatches Catch[] @relation("CatchHuntingLocality")
+
+  @@map("localities")
+}
+
+// ============================================================================
+// SPECIES
+// ============================================================================
+
+model Species {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  requiresAge    Boolean  @default(false) @map("requires_age")
+  requiresSex    Boolean  @default(false) @map("requires_sex")
+  requiresTag    Boolean  @default(false) @map("requires_tag")
+  requiresWeight Boolean  @default(false) @map("requires_weight")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  catches          Catch[]
+  harvestPlanItems HarvestPlanItem[]
+
+  @@map("species")
+}
+
+// ============================================================================
+// VISITS
+// ============================================================================
+
+model Visit {
+  id         String    @id @default(uuid())
+  memberId   String    @map("member_id")
+  localityId String    @map("locality_id")
+  startDate  DateTime  @map("start_date")
+  endDate    DateTime? @map("end_date")
+  hasGuest   Boolean   @map("has_guest")
+  guestName  String?   @map("guest_name")
+  guestNote  String?   @map("guest_note")
+  note       String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  member   Member   @relation(fields: [memberId], references: [id])
+  locality Locality @relation(fields: [localityId], references: [id])
+  catches  Catch[]
+
+  @@map("visits")
+}
+
+// ============================================================================
+// CATCHES
+// ============================================================================
+
+enum Sex {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum ShooterType {
+  MEMBER
+  GUEST
+}
+
+model Catch {
+  id                String      @id @default(uuid())
+  visitId           String      @map("visit_id")
+  speciesId         String      @map("species_id")
+  sex               Sex         @default(UNKNOWN)
+  age               String?
+  weight            Decimal?    @db.Decimal(6, 2)
+  tagNumber         String?     @map("tag_number")
+  shooterType       ShooterType @default(MEMBER) @map("shooter_type")
+  guestShooterName  String?     @map("guest_shooter_name")
+  huntingLocalityId String      @map("hunting_locality_id")
+  huntedAt          DateTime    @map("hunted_at")
+  note              String?
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  visit           Visit        @relation(fields: [visitId], references: [id])
+  species         Species      @relation(fields: [speciesId], references: [id])
+  huntingLocality Locality     @relation("CatchHuntingLocality", fields: [huntingLocalityId], references: [id])
+  photos          CatchPhoto[]
+
+  @@map("catches")
+}
+
+model CatchPhoto {
+  id         String   @id @default(uuid())
+  catchId    String   @map("catch_id")
+  storageKey String   @unique @map("storage_key")
+  mimeType   String   @map("mime_type")
+  sizeBytes  Int      @map("size_bytes")
+  width      Int?
+  height     Int?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  catch Catch @relation(fields: [catchId], references: [id], onDelete: Cascade)
+
+  @@map("catch_photos")
+}
+
+// ============================================================================
+// HUNTING SEASONS & HARVEST PLAN
+// ============================================================================
+
+model HuntingSeason {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  dateFrom  DateTime @map("date_from")
+  dateTo    DateTime @map("date_to")
+  isActive  Boolean  @default(false) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  harvestPlanItems HarvestPlanItem[]
+
+  @@map("hunting_seasons")
+}
+
+model HarvestPlanItem {
+  id           String   @id @default(uuid())
+  seasonId     String   @map("season_id")
+  speciesId    String   @map("species_id")
+  plannedCount Int      @map("planned_count")
+  note         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  season  HuntingSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  species Species       @relation(fields: [speciesId], references: [id])
+
+  @@unique([seasonId, speciesId])
+  @@map("harvest_plan_items")
+}
+
+// ============================================================================
+// ANNOUNCEMENTS
+// ============================================================================
+
+model Announcement {
+  id        String    @id @default(uuid())
+  authorId  String    @map("author_id")
+  title     String
+  body      String
+  pinned    Boolean   @default(false)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relations
+  author Member             @relation(fields: [authorId], references: [id])
+  reads  AnnouncementRead[]
+
+  @@map("announcements")
+}
+
+model AnnouncementRead {
+  announcementId String   @map("announcement_id")
+  memberId       String   @map("member_id")
+  readAt         DateTime @default(now()) @map("read_at")
+
+  // Relations
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  member       Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@id([announcementId, memberId])
+  @@map("announcement_reads")
+}
+
+// ============================================================================
+// PUSH NOTIFICATIONS
+// ============================================================================
+
+model PushSubscription {
+  id         String    @id @default(uuid())
+  memberId   String    @map("member_id")
+  endpoint   String    @unique
+  p256dh     String
+  auth       String
+  userAgent  String?   @map("user_agent")
+  isActive   Boolean   @default(true) @map("is_active")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  lastSeenAt DateTime? @map("last_seen_at")
+
+  // Relations
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
+}
+
+// ============================================================================
+// CABIN BOOKINGS
+// ============================================================================
+
+model Cabin {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  bookings CabinBooking[]
+
+  @@map("cabins")
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model CabinBooking {
+  id        String        @id @default(uuid())
+  cabinId   String        @map("cabin_id")
+  memberId  String        @map("member_id")
+  startAt   DateTime      @map("start_at")
+  endAt     DateTime      @map("end_at")
+  title     String?
+  note      String?
+  status    BookingStatus @default(CONFIRMED)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  cabin  Cabin  @relation(fields: [cabinId], references: [id])
+  member Member @relation(fields: [memberId], references: [id])
+
+  @@map("cabin_bookings")
+}
