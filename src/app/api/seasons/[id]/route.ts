@@ -57,8 +57,8 @@ export async function PUT(request: NextRequest, { params }: Params) {
             where: { id },
             data: {
                 name,
-                dateFrom: new Date(dateFrom),
-                dateTo: new Date(dateTo),
+                ...(dateFrom && { dateFrom: new Date(dateFrom) }),
+                ...(dateTo && { dateTo: new Date(dateTo) }),
                 isActive,
             },
         });

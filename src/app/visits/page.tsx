@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { redirect, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { BottomNav } from '@/components/BottomNav';
 
 interface Visit {
@@ -17,7 +17,7 @@ interface Visit {
     catchCount: number;
 }
 
-export default function VisitsPage() {
+function VisitsContent() {
     const { data: session, status } = useSession();
     const searchParams = useSearchParams();
     const [visits, setVisits] = useState<Visit[]>([]);
@@ -38,6 +38,7 @@ export default function VisitsPage() {
         if (session?.user) {
             loadVisits();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session, filter]);
 
     async function loadVisits() {
@@ -147,5 +148,17 @@ export default function VisitsPage() {
 
             <BottomNav />
         </div>
+    );
+}
+
+export default function VisitsPage() {
+    return (
+        <Suspense fallback={
+            <div className="loading-overlay">
+                <div className="spinner spinner-lg"></div>
+            </div>
+        }>
+            <VisitsContent />
+        </Suspense>
     );
 }
