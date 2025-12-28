@@ -11,11 +11,11 @@ Mobilná PWA aplikácia na evidenciu poľovného revíru, návštev, úlovkov, o
 - **Rezervácie chaty** - kalendár rezervácií poľovníckej chaty
 - **Administrácia** - správa členov, lokalít, druhov zveri a sezón
 
-## 🚀 Rýchly štart
+## 🚀 Rýchly štart (lokálny vývoj)
 
 ### Požiadavky
 
-- Node.js 18+
+- Node.js 20+
 - PostgreSQL 15+
 - Google OAuth credentials
 
@@ -23,7 +23,7 @@ Mobilná PWA aplikácia na evidenciu poľovného revíru, návštev, úlovkov, o
 
 ```bash
 # Klonovanie repozitára
-git clone <repository-url>
+git clone https://github.com/lackor-risik/kniha-pz.git
 cd kniha-pz
 
 # Inštalácia závislostí
@@ -40,7 +40,7 @@ npx prisma generate
 npx prisma migrate dev
 
 # Seed dát (voliteľné)
-npx prisma db seed
+npm run db:seed
 
 # Spustenie vývojového servera
 npm run dev
@@ -48,15 +48,114 @@ npm run dev
 
 Aplikácia bude dostupná na `http://localhost:3000`
 
-## 🐳 Docker Deployment
+## 🐳 Docker Deployment (Synology NAS)
+
+### Požiadavky
+
+- Synology NAS s nainštalovaným **Container Manager** (Docker)
+- SSH prístup k NAS
+- Doména s HTTPS (voliteľné, ale odporúčané)
+
+### Krok 1: Príprava súborov
 
 ```bash
-# Build a spustenie
-docker-compose up -d
+# SSH do NAS
+ssh admin@vas-nas-ip
 
-# Migrácia databázy (prvé spustenie)
-docker-compose exec app npx prisma migrate deploy
-docker-compose exec app npx prisma db seed
+# Vytvorenie priečinkov
+cd /volume1/docker
+mkdir -p kniha-pz
+cd kniha-pz
+
+# Klonovanie repozitára
+git clone https://github.com/lackor-risik/kniha-pz.git .
+
+# Vytvorenie priečinkov pre dáta
+mkdir -p data/uploads data/postgres
+```
+
+### Krok 2: Konfigurácia prostredia
+
+Vytvorte `.env` súbor:
+
+```bash
+nano .env
+```
+
+S obsahom:
+
+```env
+# NextAuth
+NEXTAUTH_URL=https://vasa-domena.sk
+NEXTAUTH_SECRET=vygenerujte_openssl_rand_-base64_32
+
+# Google OAuth
+GOOGLE_CLIENT_ID=vas-google-client-id
+GOOGLE_CLIENT_SECRET=vas-google-client-secret
+
+# VAPID (push notifikácie) - vygenerujte: npx web-push generate-vapid-keys
+VAPID_PUBLIC_KEY=vasa_vapid_public_key
+VAPID_PRIVATE_KEY=vasa_vapid_private_key
+VAPID_SUBJECT=mailto:vas@email.com
+
+# Cron (automatické ukončenie návštev o polnoci)
+CRON_SECRET=nahodny_retazec_pre_cron
+```
+
+**Generovanie NEXTAUTH_SECRET:**
+```bash
+openssl rand -base64 32
+```
+
+### Krok 3: Spustenie
+
+```bash
+docker-compose up -d --build
+```
+
+Prvé spustenie:
+- Automaticky vytvorí databázu
+- Spustí migrácie
+- Naplní databázu základnými dátami (lokality, druhy, sezóna)
+
+### Krok 4: Reverse Proxy (voliteľné)
+
+Pre HTTPS prístup cez Synology:
+
+1. **Control Panel** → **Login Portal** → **Advanced** → **Reverse Proxy**
+2. Pridajte pravidlo:
+   - **Source**: HTTPS, `vasa-domena.sk`, port 443
+   - **Destination**: HTTP, `localhost`, port 3000
+3. V **Custom Header** pridajte:
+   - `X-Forwarded-For` → `$proxy_add_x_forwarded_for`
+   - `X-Forwarded-Proto` → `$scheme`
+
+### Kde sú uložené dáta
+
+| Dáta | Cesta |
+|------|-------|
+| PostgreSQL databáza | `/volume1/docker/kniha-pz/data/postgres/` |
+| Nahrané fotky | `/volume1/docker/kniha-pz/data/uploads/` |
+
+### Užitočné príkazy
+
+```bash
+# Pozrieť logy
+docker-compose logs -f app
+
+# Reštartovať aplikáciu
+docker-compose restart
+
+# Aktualizovať z GitHub
+git pull
+docker-compose down
+docker-compose up -d --build
+
+# Záloha databázy
+docker-compose exec db pg_dump -U kniha_pz kniha_pz > backup.sql
+
+# Obnova databázy
+docker-compose exec -T db psql -U kniha_pz kniha_pz < backup.sql
 ```
 
 ## ⚙️ Konfigurácia
@@ -65,7 +164,7 @@ docker-compose exec app npx prisma db seed
 
 | Premenná | Popis | Povinná |
 |----------|-------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | ✅ |
+| `DATABASE_URL` | PostgreSQL connection string | ✅ (auto v Docker) |
 | `NEXTAUTH_URL` | URL aplikácie | ✅ |
 | `NEXTAUTH_SECRET` | Tajný kľúč pre NextAuth | ✅ |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID | ✅ |
@@ -73,9 +172,18 @@ docker-compose exec app npx prisma db seed
 | `VAPID_PUBLIC_KEY` | VAPID verejný kľúč pre push notifikácie | ❌ |
 | `VAPID_PRIVATE_KEY` | VAPID súkromný kľúč | ❌ |
 | `VAPID_SUBJECT` | VAPID subject (mailto: alebo URL) | ❌ |
-| `STORAGE_TYPE` | `filesystem` alebo `minio` | ❌ |
-| `UPLOADS_PATH` | Cesta pre ukladanie fotiek | ❌ |
 | `CRON_SECRET` | Tajný kľúč pre cron endpointy | ❌ |
+
+### Google OAuth Setup
+
+1. Prejdite na [Google Cloud Console](https://console.cloud.google.com/)
+2. Vytvorte nový projekt alebo vyberte existujúci
+3. Prejdite na **APIs & Services** > **Credentials**
+4. Vytvorte **OAuth 2.0 Client ID** typu "Web application"
+5. Pridajte:
+   - Authorized JavaScript origins: `https://vasa-domena.sk`
+   - Authorized redirect URIs: `https://vasa-domena.sk/api/auth/callback/google`
+6. Skopírujte Client ID a Client Secret do `.env`
 
 ### Generovanie VAPID kľúčov
 
@@ -85,23 +193,7 @@ npx web-push generate-vapid-keys
 
 ## ⏰ Automatické ukončovanie návštev
 
-Aplikácia obsahuje endpoint na automatické ukončenie všetkých neukončených návštev. Odporúča sa spúšťať denne o polnoci.
-
-### Nastavenie
-
-1. Vygenerujte tajný kľúč a pridajte do `.env`:
-```bash
-CRON_SECRET=vas-nahodny-tajny-kluc
-```
-
-2. Nastavte cron job (systémový crontab alebo Task Scheduler na Synology):
-```bash
-# Linux/macOS crontab - spustenie o 0:05
-5 0 * * * curl -X POST https://vasa-domena.sk/api/cron/close-visits -H "Authorization: Bearer VAS_CRON_SECRET"
-
-# Alternatívne pre localhost
-5 0 * * * curl -X POST http://localhost:3000/api/cron/close-visits -H "Authorization: Bearer VAS_CRON_SECRET"
-```
+Aplikácia obsahuje endpoint na automatické ukončenie všetkých neukončených návštev o polnoci.
 
 ### Synology Task Scheduler
 
@@ -115,16 +207,6 @@ CRON_SECRET=vas-nahodny-tajny-kluc
    ```bash
    curl -X POST http://localhost:3000/api/cron/close-visits -H "Authorization: Bearer VAS_CRON_SECRET"
    ```
-
-### Google OAuth Setup
-
-1. Prejdite na [Google Cloud Console](https://console.cloud.google.com/)
-2. Vytvorte nový projekt alebo vyberte existujúci
-3. Prejdite na "APIs & Services" > "Credentials"
-4. Vytvorte "OAuth 2.0 Client ID" typu "Web application"
-5. Pridajte Authorized JavaScript origins: `http://localhost:3000`
-6. Pridajte Authorized redirect URIs: `http://localhost:3000/api/auth/callback/google`
-7. Skopírujte Client ID a Client Secret do `.env`
 
 ## 📱 PWA Inštalácia
 
@@ -145,6 +227,7 @@ Aplikácia je Progressive Web App a môže byť nainštalovaná na:
 kniha-pz/
 ├── prisma/
 │   ├── schema.prisma      # Databázová schéma
+│   ├── migrations/        # Databázové migrácie
 │   └── seed.ts            # Seed dáta
 ├── src/
 │   ├── app/               # Next.js App Router
@@ -157,11 +240,12 @@ kniha-pz/
 │   │   └── harvest-plan/  # Plán lovu
 │   ├── components/        # React komponenty
 │   └── lib/               # Pomocné knižnice
-├── public/
-│   ├── manifest.json      # PWA manifest
-│   └── sw.js              # Service worker
+├── data/
+│   ├── uploads/           # Nahrané fotky (bind mount)
+│   └── postgres/          # PostgreSQL dáta (bind mount)
 ├── docker-compose.yml
 ├── Dockerfile
+├── docker-entrypoint.sh   # Startup script (migrácie + seed)
 └── package.json
 ```
 
@@ -174,6 +258,9 @@ npm run dev
 # Lint kontrola
 npm run lint
 
+# Type check
+npm run type-check
+
 # Build produkcie
 npm run build
 
@@ -181,7 +268,7 @@ npm run build
 npm start
 
 # Prisma Studio (GUI pre databázu)
-npx prisma studio
+npm run db:studio
 ```
 
 ## 📊 API Endpointy
