@@ -9,7 +9,7 @@ export interface StorageFile {
 }
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
 
 function getUploadsPath(): string {
     return process.env.UPLOADS_PATH || './data/uploads';

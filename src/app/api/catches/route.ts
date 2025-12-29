@@ -40,6 +40,9 @@ export async function GET(request: NextRequest) {
                         member: { select: { id: true, displayName: true } },
                     },
                 },
+                _count: {
+                    select: { photos: true }
+                }
             },
             orderBy: [
                 { species: { name: 'asc' } },

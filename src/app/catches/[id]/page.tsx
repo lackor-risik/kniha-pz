@@ -45,6 +45,7 @@ export default function CatchDetailPage() {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
+    const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -238,12 +239,19 @@ export default function CatchDetailPage() {
 
                 <div className="photo-grid">
                     {catchData.photos.map((photo) => (
-                        <div key={photo.id} className="photo-item">
-                            <img src={`/api/catch-photos/${photo.id}/image`} alt="Úlovok" />
+                        <div key={photo.id} className="photo-item" style={{ cursor: 'pointer' }}>
+                            <img
+                                src={`/api/catch-photos/${photo.id}/image`}
+                                alt="Úlovok"
+                                onClick={() => setLightboxPhoto(`/api/catch-photos/${photo.id}/image`)}
+                            />
                             {canUploadPhotos && (
                                 <button
                                     className="photo-remove"
-                                    onClick={() => handlePhotoDelete(photo.id)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handlePhotoDelete(photo.id);
+                                    }}
                                 >
                                     ×
                                 </button>
@@ -273,6 +281,57 @@ export default function CatchDetailPage() {
                     )}
                 </div>
             </div>
+
+            {/* Photo Lightbox */}
+            {lightboxPhoto && (
+                <div
+                    onClick={() => setLightboxPhoto(null)}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'rgba(0, 0, 0, 0.9)',
+                        zIndex: 9999,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        padding: 'var(--spacing-4)'
+                    }}
+                >
+                    <button
+                        onClick={() => setLightboxPhoto(null)}
+                        style={{
+                            position: 'absolute',
+                            top: 'var(--spacing-4)',
+                            right: 'var(--spacing-4)',
+                            background: 'rgba(255,255,255,0.2)',
+                            border: 'none',
+                            color: 'white',
+                            fontSize: '24px',
+                            width: '44px',
+                            height: '44px',
+                            borderRadius: 'var(--radius-full)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        ×
+                    </button>
+                    <img
+                        src={lightboxPhoto}
+                        alt="Fotka úlovku"
+                        style={{
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            objectFit: 'contain',
+                            borderRadius: 'var(--radius-lg)'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
 
             <BottomNav />
         </div>

@@ -115,7 +115,14 @@ function VisitsContent() {
                     <div className="card">
                         {visits.map((visit) => (
                             <Link key={visit.id} href={`/visits/${visit.id}`} className="list-item">
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-1)' }}>
+                                <div style={{
+                                    width: '65px',
+                                    flexShrink: 0,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 'var(--spacing-1)',
+                                    alignItems: 'flex-start'
+                                }}>
                                     {visit.isOpen && (
                                         <span className="badge badge-visit-active">● Aktívna</span>
                                     )}

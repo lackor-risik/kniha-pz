@@ -17,6 +17,7 @@ interface Catch {
         id: string;
         member: { id: string; displayName: string };
     };
+    _count: { photos: number };
 }
 
 interface Season {
@@ -197,6 +198,7 @@ export default function CatchesListPage() {
                                                 </div>
                                                 <div className="list-item-subtitle">
                                                     {c.huntingLocality.name} • {new Date(c.huntedAt).toLocaleString('sk')}
+                                                    {c._count.photos > 0 && ` • 📷 ${c._count.photos}`}
                                                 </div>
                                             </div>
                                             <span className="list-item-arrow">→</span>
