@@ -1,15 +1,21 @@
 # Kniha PZ - Evidencia poľovného revíru
 
+[![Release](https://img.shields.io/badge/release-v1.0.0-green.svg)](https://github.com/lackor-risik/kniha-pz/releases/tag/v1.0.0)
+[![Next.js](https://img.shields.io/badge/Next.js-14.2-black.svg)](https://nextjs.org/)
+
 Mobilná PWA aplikácia na evidenciu poľovného revíru, návštev, úlovkov, oznámenia a rezervácie chaty.
 
 ## 🦌 Funkcie
 
 - **Návštevy revíru** - evidencia príchodov a odchodov členov z lokalít
-- **Úlovky** - záznam úlovkov s podrobnými informáciami a fotkami
+- **Úlovky** - záznam úlovkov s podrobnými informáciami a fotkami (fullscreen prehliadanie)
 - **Plán lovu** - sledovanie sezónnych kvót a čerpania
 - **Oznamy** - zdieľanie informácií s push notifikáciami
 - **Rezervácie chaty** - kalendár rezervácií poľovníckej chaty
 - **Administrácia** - správa členov, lokalít, druhov zveri a sezón
+- **Admin hesla** - nastavenie hesla a vynútená zmena pri prvom prihlásení
+- **Delegácia návštev** - admin môže začať návštevu v mene iného člena
+- **Editácia návštev** - úprava poznámok aj po ukončení návštevy
 
 ## 🚀 Rýchly štart (lokálny vývoj)
 
