@@ -74,6 +74,23 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        // Mark all existing announcements as read for new member
+        // so they don't see old announcements as unread
+        const existingAnnouncements = await prisma.announcement.findMany({
+            where: { deletedAt: null },
+            select: { id: true }
+        });
+
+        if (existingAnnouncements.length > 0) {
+            await prisma.announcementRead.createMany({
+                data: existingAnnouncements.map(a => ({
+                    announcementId: a.id,
+                    memberId: member.id,
+                })),
+                skipDuplicates: true,
+            });
+        }
+
         return NextResponse.json(member, { status: 201 });
     } catch (error) {
         return handleApiError(error);
