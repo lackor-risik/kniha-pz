@@ -84,22 +84,22 @@ export default function AdminPage() {
                     gap: 'var(--spacing-3)',
                     marginBottom: 'var(--spacing-4)',
                 }}>
-                    <div className="stat-card">
+                    <Link href="/admin/members" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
                         <div className="stat-value">{stats?.members || 0}</div>
                         <div className="stat-label">Členovia</div>
-                    </div>
-                    <div className="stat-card">
+                    </Link>
+                    <Link href="/admin/localities" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
                         <div className="stat-value">{stats?.localities || 0}</div>
                         <div className="stat-label">Lokality</div>
-                    </div>
-                    <div className="stat-card">
+                    </Link>
+                    <Link href="/admin/species" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
                         <div className="stat-value">{stats?.species || 0}</div>
                         <div className="stat-label">Druhy zveri</div>
-                    </div>
-                    <div className="stat-card">
+                    </Link>
+                    <Link href="/admin/seasons" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
                         <div className="stat-value">{stats?.seasons || 0}</div>
                         <div className="stat-label">Sezóny</div>
-                    </div>
+                    </Link>
                 </div>
 
                 {/* Admin Menu */}

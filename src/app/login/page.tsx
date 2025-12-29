@@ -212,17 +212,18 @@ export default function LoginPage() {
                 color: 'var(--color-white)'
             }}>
                 <div style={{
-                    width: 80,
-                    height: 80,
-                    background: 'rgba(255,255,255,0.2)',
-                    borderRadius: 'var(--radius-2xl)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    width: 120,
+                    height: 120,
+                    borderRadius: 'var(--radius-full)',
+                    overflow: 'hidden',
                     margin: '0 auto var(--spacing-4)',
-                    fontSize: '40px'
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
                 }}>
-                    🦌
+                    <img
+                        src="/icons/logo.png"
+                        alt="Logo"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
                 </div>
                 <h1 style={{
                     fontSize: 'var(--font-size-3xl)',
