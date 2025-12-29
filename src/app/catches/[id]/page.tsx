@@ -8,11 +8,12 @@ import { BottomNav } from '@/components/BottomNav';
 
 interface CatchDetail {
     id: string;
-    species: { id: string; name: string; requiresSex: boolean };
+    species: { id: string; name: string; requiresSex: boolean; requiresWeight: boolean };
     huntingLocality: { id: string; name: string };
     sex: string;
     age: string | null;
     tagNumber: string | null;
+    weight: number | null;
     shooterType: string;
     guestShooterName: string | null;
     huntedAt: string;
@@ -196,6 +197,12 @@ export default function CatchDetailPage() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <span style={{ color: 'var(--color-gray-500)' }}>Značka</span>
                                     <span className="badge badge-info">{catchData.tagNumber}</span>
+                                </div>
+                            )}
+                            {catchData.species.requiresWeight && catchData.weight && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ color: 'var(--color-gray-500)' }}>Váha</span>
+                                    <span style={{ fontWeight: 500 }}>{catchData.weight} kg</span>
                                 </div>
                             )}
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>

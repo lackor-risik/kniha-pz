@@ -230,14 +230,14 @@ export default function LoginPage() {
                     fontWeight: 700,
                     marginBottom: 'var(--spacing-2)'
                 }}>
-                    Kniha PZ
+                    Kniha PZ Skalka
                 </h1>
-                <p style={{
+                {/* <p style={{
                     fontSize: 'var(--font-size-base)',
                     opacity: 0.9
                 }}>
                     Evidencia poľovného revíru
-                </p>
+                </p> */}
             </div>
 
             <div className="card" style={{
@@ -265,7 +265,7 @@ export default function LoginPage() {
                 marginTop: 'var(--spacing-8)',
                 textAlign: 'center'
             }}>
-                © 2024 Kniha PZ
+                © 2026 Kniha PZ
             </p>
         </div>
     );

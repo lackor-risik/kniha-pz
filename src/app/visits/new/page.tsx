@@ -12,13 +12,21 @@ interface Locality {
     isOccupied: boolean;
 }
 
+interface Member {
+    id: string;
+    displayName: string;
+}
+
 export default function NewVisitPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [localities, setLocalities] = useState<Locality[]>([]);
+    const [members, setMembers] = useState<Member[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+
+    const isAdmin = session?.user?.role === 'ADMIN';
 
     // Calculate datetime limits
     const now = new Date();
@@ -39,6 +47,7 @@ export default function NewVisitPage() {
         guestName: '',
         guestNote: '',
         note: '',
+        memberId: '', // For admin only
     });
 
     useEffect(() => {
@@ -50,8 +59,11 @@ export default function NewVisitPage() {
     useEffect(() => {
         if (session?.user) {
             loadLocalities();
+            if (isAdmin) {
+                loadMembers();
+            }
         }
-    }, [session]);
+    }, [session, isAdmin]);
 
     async function loadLocalities() {
         try {
@@ -62,6 +74,16 @@ export default function NewVisitPage() {
             console.error('Failed to load localities:', error);
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function loadMembers() {
+        try {
+            const res = await fetch('/api/members');
+            const data = await res.json();
+            setMembers(data.filter((m: Member & { isActive: boolean }) => m.isActive));
+        } catch (error) {
+            console.error('Failed to load members:', error);
         }
     }
 
@@ -92,6 +114,7 @@ export default function NewVisitPage() {
                     guestName: formData.hasGuest ? formData.guestName : undefined,
                     guestNote: formData.hasGuest ? formData.guestNote : undefined,
                     note: formData.note || undefined,
+                    memberId: isAdmin && formData.memberId ? formData.memberId : undefined,
                 }),
             });
 
@@ -144,6 +167,28 @@ export default function NewVisitPage() {
                 <form onSubmit={handleSubmit}>
                     <div className="card">
                         <div className="card-body">
+                            {/* Member Selection - Admin only */}
+                            {isAdmin && (
+                                <div className="form-group">
+                                    <label className="form-label">Člen</label>
+                                    <select
+                                        className="form-select"
+                                        value={formData.memberId}
+                                        onChange={(e) => setFormData({ ...formData, memberId: e.target.value })}
+                                    >
+                                        <option value="">Ja (vlastná návšteva)</option>
+                                        {members.map((m) => (
+                                            <option key={m.id} value={m.id}>
+                                                {m.displayName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className="form-hint">
+                                        Ako admin môžete začať návštevu v mene iného člena
+                                    </p>
+                                </div>
+                            )}
+
                             {/* Locality Selection */}
                             <div className="form-group">
                                 <label className="form-label form-label-required">Lokalita</label>

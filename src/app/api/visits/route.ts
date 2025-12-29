@@ -85,7 +85,20 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: validation.error }, { status: 400 });
         }
 
-        const { localityId, startDate, hasGuest, guestName, guestNote, note } = validation.data;
+        const { localityId, startDate, hasGuest, guestName, guestNote, note, memberId } = validation.data;
+
+        // Determine target member - admin can specify memberId, otherwise use current user
+        let targetMemberId = user.id;
+        if (memberId && isAdmin(user)) {
+            // Verify target member exists
+            const targetMember = await prisma.member.findUnique({
+                where: { id: memberId, isActive: true }
+            });
+            if (!targetMember) {
+                return badRequest('Člen neexistuje alebo nie je aktívny');
+            }
+            targetMemberId = memberId;
+        }
 
         // Check if locality exists and is active
         const locality = await prisma.locality.findUnique({
@@ -96,16 +109,18 @@ export async function POST(request: NextRequest) {
             return badRequest('Lokalita neexistuje alebo nie je aktívna');
         }
 
-        // Check if user already has an active visit
+        // Check if target member already has an active visit
         const activeVisit = await prisma.visit.findFirst({
             where: {
-                memberId: user.id,
+                memberId: targetMemberId,
                 endDate: null,
             },
         });
 
         if (activeVisit) {
-            return conflict('Už máte aktívnu návštevu. Najprv ju ukončite.');
+            return conflict(targetMemberId === user.id
+                ? 'Už máte aktívnu návštevu. Najprv ju ukončite.'
+                : 'Tento člen už má aktívnu návštevu.');
         }
 
         // Check if locality is occupied
@@ -128,7 +143,7 @@ export async function POST(request: NextRequest) {
         // Create visit
         const visit = await prisma.visit.create({
             data: {
-                memberId: user.id,
+                memberId: targetMemberId,
                 localityId,
                 startDate: new Date(startDate),
                 hasGuest,

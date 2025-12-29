@@ -50,6 +50,9 @@ export default function VisitDetailPage() {
     const [showGuestModal, setShowGuestModal] = useState(false);
     const [guestName, setGuestName] = useState('');
     const [addingGuest, setAddingGuest] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editData, setEditData] = useState({ note: '', hasGuest: false, guestName: '', guestNote: '' });
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -168,8 +171,48 @@ export default function VisitDetailPage() {
         }
     }
 
+    function openEditModal() {
+        if (visit) {
+            setEditData({
+                note: visit.note || '',
+                hasGuest: visit.hasGuest,
+                guestName: visit.guestName || '',
+                guestNote: visit.guestNote || '',
+            });
+            setShowEditModal(true);
+        }
+    }
+
+    async function handleSaveEdit() {
+        setSaving(true);
+        setError('');
+
+        try {
+            const res = await fetch(`/api/visits/${visitId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editData),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setError(data.error || 'Chyba pri ukladaní');
+                return;
+            }
+
+            await loadVisit();
+            setShowEditModal(false);
+        } catch {
+            setError('Chyba pripojenia k serveru');
+        } finally {
+            setSaving(false);
+        }
+    }
+
+    const isAdmin = session?.user?.role === 'ADMIN';
     const canEdit = session?.user && (
-        session.user.role === 'ADMIN' || session.user.id === visit?.member.id
+        isAdmin || session.user.id === visit?.member.id
     );
 
     // Get max datetime (now)
@@ -206,6 +249,11 @@ export default function VisitDetailPage() {
                     </div>
                     {visit.isOpen && (
                         <span className="badge badge-visit-active">● Aktívna</span>
+                    )}
+                    {canEdit && (
+                        <button onClick={openEditModal} className="btn btn-ghost btn-sm">
+                            ✏️
+                        </button>
                     )}
                 </div>
             </header>
@@ -401,6 +449,85 @@ export default function VisitDetailPage() {
                                 disabled={addingGuest || !guestName.trim()}
                             >
                                 {addingGuest ? <span className="spinner"></span> : 'Pridať'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Visit Modal */}
+            {showEditModal && (
+                <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="modal-title">Upraviť návštevu</h3>
+                            <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label className="form-label">Poznámka</label>
+                                <textarea
+                                    className="form-textarea"
+                                    value={editData.note}
+                                    onChange={(e) => setEditData({ ...editData, note: e.target.value })}
+                                    placeholder="Poznámka k návšteve..."
+                                    rows={3}
+                                />
+                            </div>
+
+                            {isAdmin && (
+                                <>
+                                    <div className="form-group">
+                                        <label className="form-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={editData.hasGuest}
+                                                onChange={(e) => setEditData({ ...editData, hasGuest: e.target.checked })}
+                                            />
+                                            <span>S hosťom</span>
+                                        </label>
+                                    </div>
+
+                                    {editData.hasGuest && (
+                                        <>
+                                            <div className="form-group">
+                                                <label className="form-label">Meno hosťa</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={editData.guestName}
+                                                    onChange={(e) => setEditData({ ...editData, guestName: e.target.value })}
+                                                    placeholder="Meno a priezvisko"
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Poznámka k hosťovi</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={editData.guestNote}
+                                                    onChange={(e) => setEditData({ ...editData, guestNote: e.target.value })}
+                                                    placeholder="Napr. číslo povolenia"
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => setShowEditModal(false)}
+                            >
+                                Zrušiť
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleSaveEdit}
+                                disabled={saving}
+                            >
+                                {saving ? <span className="spinner"></span> : 'Uložiť'}
                             </button>
                         </div>
                     </div>

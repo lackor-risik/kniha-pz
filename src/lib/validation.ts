@@ -66,6 +66,7 @@ export const visitCreateSchema = z.object({
     guestName: z.string().max(100).optional(),
     guestNote: z.string().max(500).optional(),
     note: z.string().max(1000).optional(),
+    memberId: z.string().uuid('Neplatné ID člena').optional(), // Admin only
 });
 
 export const visitUpdateSchema = z.object({
