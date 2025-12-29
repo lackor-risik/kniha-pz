@@ -12,6 +12,13 @@ interface Member {
     displayName: string;
     role: string;
     isActive: boolean;
+    passwordHash: string | null;
+    forcePasswordChange: boolean;
+    _count?: {
+        visits: number;
+        announcements: number;
+        cabinBookings: number;
+    };
 }
 
 export default function EditMemberPage() {
@@ -24,6 +31,7 @@ export default function EditMemberPage() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     const [formData, setFormData] = useState({
         email: '',
@@ -31,6 +39,12 @@ export default function EditMemberPage() {
         role: 'MEMBER',
         isActive: true,
     });
+
+    // Password management
+    const [newPassword, setNewPassword] = useState('');
+    const [forcePasswordChange, setForcePasswordChange] = useState(false);
+    const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+    const [passwordError, setPasswordError] = useState('');
 
     useEffect(() => {
         if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
@@ -69,6 +83,7 @@ export default function EditMemberPage() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError('');
+        setSuccessMessage('');
         setSubmitting(true);
 
         try {
@@ -86,7 +101,127 @@ export default function EditMemberPage() {
             }
 
             router.push('/admin/members');
-        } catch (error) {
+        } catch {
+            setError('Chyba pripojenia k serveru');
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    async function handleSetPassword(e: React.FormEvent) {
+        e.preventDefault();
+        setPasswordError('');
+        setSuccessMessage('');
+
+        if (newPassword.length < 6) {
+            setPasswordError('Heslo musí mať aspoň 6 znakov');
+            return;
+        }
+
+        setPasswordSubmitting(true);
+
+        try {
+            const res = await fetch(`/api/members/${memberId}/password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: newPassword, forcePasswordChange }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setPasswordError(data.error || 'Chyba pri nastavovaní hesla');
+                return;
+            }
+
+            setNewPassword('');
+            setForcePasswordChange(false);
+            setSuccessMessage(forcePasswordChange
+                ? 'Heslo bolo nastavené. Používateľ bude vyzvaný na zmenu pri prihlásení.'
+                : 'Heslo bolo úspešne nastavené');
+            // Update local state
+            if (member) {
+                setMember({ ...member, passwordHash: 'set', forcePasswordChange });
+            }
+        } catch {
+            setPasswordError('Chyba pripojenia k serveru');
+        } finally {
+            setPasswordSubmitting(false);
+        }
+    }
+
+    async function handleRemovePassword() {
+        if (!confirm('Naozaj chcete odstrániť heslo tohto člena? Nebude sa môcť prihlásiť heslom.')) {
+            return;
+        }
+
+        setPasswordError('');
+        setSuccessMessage('');
+        setPasswordSubmitting(true);
+
+        try {
+            const res = await fetch(`/api/members/${memberId}/password`, {
+                method: 'DELETE',
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                setPasswordError(data.error || 'Chyba pri odstraňovaní hesla');
+                return;
+            }
+
+            setSuccessMessage('Heslo bolo odstránené');
+            // Update local state
+            if (member) {
+                setMember({ ...member, passwordHash: null });
+            }
+        } catch {
+            setPasswordError('Chyba pripojenia k serveru');
+        } finally {
+            setPasswordSubmitting(false);
+        }
+    }
+
+    async function handleDeleteMember() {
+        const relatedCount = (member?._count?.visits || 0) + (member?._count?.announcements || 0) + (member?._count?.cabinBookings || 0);
+
+        let confirmMessage = `Naozaj chcete odstrániť člena "${member?.displayName}"?`;
+
+        if (relatedCount > 0) {
+            confirmMessage = `Člen "${member?.displayName}" má súvisiace záznamy:\n` +
+                `- Návštevy: ${member?._count?.visits || 0}\n` +
+                `- Oznamy: ${member?._count?.announcements || 0}\n` +
+                `- Rezervácie chaty: ${member?._count?.cabinBookings || 0}\n\n` +
+                `Tento člen nemôže byť odstránený. Môžete ho iba deaktivovať.`;
+            alert(confirmMessage);
+            return;
+        }
+
+        if (!confirm(confirmMessage + '\n\nTáto akcia je nezvratná!')) {
+            return;
+        }
+
+        setSubmitting(true);
+        setError('');
+
+        try {
+            const res = await fetch(`/api/members/${memberId}`, {
+                method: 'DELETE',
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                if (data.relatedRecords) {
+                    setError(`Člen má súvisiace záznamy: ${data.relatedRecords.visits} návštev, ${data.relatedRecords.announcements} oznamov, ${data.relatedRecords.cabinBookings} rezervácií`);
+                } else {
+                    setError(data.error || 'Chyba pri odstraňovaní');
+                }
+                return;
+            }
+
+            router.push('/admin/members');
+        } catch {
             setError('Chyba pripojenia k serveru');
         } finally {
             setSubmitting(false);
@@ -119,6 +254,12 @@ export default function EditMemberPage() {
                 {error && (
                     <div className="alert alert-error" style={{ marginBottom: 'var(--spacing-4)' }}>
                         {error}
+                    </div>
+                )}
+
+                {successMessage && (
+                    <div className="alert alert-success" style={{ marginBottom: 'var(--spacing-4)' }}>
+                        {successMessage}
                     </div>
                 )}
 
@@ -179,6 +320,179 @@ export default function EditMemberPage() {
                         {submitting ? <span className="spinner"></span> : 'Uložiť zmeny'}
                     </button>
                 </form>
+
+                {/* Password Management Section */}
+                <div className="card" style={{ marginTop: 'var(--spacing-6)' }}>
+                    <div className="card-body">
+                        <h3 style={{
+                            fontSize: 'var(--font-size-base)',
+                            fontWeight: 600,
+                            marginBottom: 'var(--spacing-4)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--spacing-2)'
+                        }}>
+                            🔐 Správa hesla
+                        </h3>
+
+                        {passwordError && (
+                            <div className="alert alert-error" style={{ marginBottom: 'var(--spacing-4)' }}>
+                                {passwordError}
+                            </div>
+                        )}
+
+                        <div style={{
+                            padding: 'var(--spacing-3)',
+                            background: member.passwordHash ? 'var(--color-success-bg)' : 'var(--color-warning-bg)',
+                            borderRadius: 'var(--radius-md)',
+                            marginBottom: 'var(--spacing-4)',
+                            fontSize: 'var(--font-size-sm)'
+                        }}>
+                            {member.passwordHash
+                                ? '✅ Heslo je nastavené - člen sa môže prihlásiť e-mailom a heslom'
+                                : '⚠️ Heslo nie je nastavené - člen sa môže prihlásiť len cez Google'
+                            }
+                        </div>
+
+                        <form onSubmit={handleSetPassword}>
+                            <div className="form-group">
+                                <label className="form-label">
+                                    {member.passwordHash ? 'Nové heslo' : 'Nastaviť heslo'}
+                                </label>
+                                <input
+                                    type="password"
+                                    className="form-input"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="Minimálne 6 znakov"
+                                    minLength={6}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={forcePasswordChange}
+                                        onChange={(e) => setForcePasswordChange(e.target.checked)}
+                                    />
+                                    <span className="form-switch-toggle"></span>
+                                    <span>Vyžadovať zmenu hesla pri ďalšom prihlásení</span>
+                                </label>
+                            </div>
+
+                            {member.forcePasswordChange && (
+                                <div style={{
+                                    padding: 'var(--spacing-2)',
+                                    background: 'var(--color-warning-bg)',
+                                    borderRadius: 'var(--radius-md)',
+                                    marginBottom: 'var(--spacing-3)',
+                                    fontSize: 'var(--font-size-xs)',
+                                    color: 'var(--color-warning)'
+                                }}>
+                                    ⚠️ Člen bude musieť zmeniť heslo pri ďalšom prihlásení
+                                </div>
+                            )}
+
+                            <div style={{ display: 'flex', gap: 'var(--spacing-3)' }}>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary"
+                                    disabled={passwordSubmitting || newPassword.length < 6}
+                                    style={{ flex: 1 }}
+                                >
+                                    {passwordSubmitting ? (
+                                        <span className="spinner"></span>
+                                    ) : member.passwordHash ? (
+                                        'Zmeniť heslo'
+                                    ) : (
+                                        'Nastaviť heslo'
+                                    )}
+                                </button>
+
+                                {member.passwordHash && (
+                                    <button
+                                        type="button"
+                                        className="btn"
+                                        onClick={handleRemovePassword}
+                                        disabled={passwordSubmitting}
+                                        style={{
+                                            background: 'var(--color-error-bg)',
+                                            color: 'var(--color-error)'
+                                        }}
+                                    >
+                                        Odstrániť
+                                    </button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {/* Danger Zone */}
+                <div className="card" style={{ marginTop: 'var(--spacing-6)', borderColor: 'var(--color-error)' }}>
+                    <div className="card-body">
+                        <h3 style={{
+                            fontSize: 'var(--font-size-base)',
+                            fontWeight: 600,
+                            marginBottom: 'var(--spacing-3)',
+                            color: 'var(--color-error)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--spacing-2)'
+                        }}>
+                            ⚠️ Nebezpečná zóna
+                        </h3>
+
+                        {member._count && (member._count.visits > 0 || member._count.announcements > 0 || member._count.cabinBookings > 0) ? (
+                            <div style={{
+                                padding: 'var(--spacing-3)',
+                                background: 'var(--color-warning-bg)',
+                                borderRadius: 'var(--radius-md)',
+                                fontSize: 'var(--font-size-sm)',
+                                marginBottom: 'var(--spacing-3)'
+                            }}>
+                                <p style={{ marginBottom: 'var(--spacing-2)' }}>
+                                    Člen má súvisiace záznamy a nemôže byť odstránený:
+                                </p>
+                                <ul style={{ marginLeft: 'var(--spacing-4)', fontSize: 'var(--font-size-xs)' }}>
+                                    {member._count.visits > 0 && <li>Návštevy: {member._count.visits}</li>}
+                                    {member._count.announcements > 0 && <li>Oznamy: {member._count.announcements}</li>}
+                                    {member._count.cabinBookings > 0 && <li>Rezervácie chaty: {member._count.cabinBookings}</li>}
+                                </ul>
+                                <p style={{ marginTop: 'var(--spacing-2)', fontStyle: 'italic' }}>
+                                    Môžete člena iba deaktivovať pomocou prepínača vyššie.
+                                </p>
+                            </div>
+                        ) : (
+                            <div style={{
+                                padding: 'var(--spacing-3)',
+                                background: 'var(--color-gray-50)',
+                                borderRadius: 'var(--radius-md)',
+                                fontSize: 'var(--font-size-sm)',
+                                marginBottom: 'var(--spacing-3)'
+                            }}>
+                                Člen nemá žiadne súvisiace záznamy a môže byť úplne odstránený.
+                            </div>
+                        )}
+
+                        <button
+                            type="button"
+                            onClick={handleDeleteMember}
+                            disabled={submitting || (member._count && (member._count.visits > 0 || member._count.announcements > 0 || member._count.cabinBookings > 0))}
+                            className="btn"
+                            style={{
+                                background: 'var(--color-error)',
+                                color: 'white',
+                                width: '100%',
+                                opacity: (member._count && (member._count.visits > 0 || member._count.announcements > 0 || member._count.cabinBookings > 0)) ? 0.5 : 1,
+                                cursor: (member._count && (member._count.visits > 0 || member._count.announcements > 0 || member._count.cabinBookings > 0)) ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {submitting ? <span className="spinner"></span> : '🗑️ Odstrániť člena natrvalo'}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <BottomNav />

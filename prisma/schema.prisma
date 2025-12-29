@@ -23,6 +23,8 @@ model Member {
   id          String   @id @default(uuid())
   email       String   @unique
   googleSub   String?  @unique @map("google_sub")
+  passwordHash String? @map("password_hash")
+  forcePasswordChange Boolean @default(false) @map("force_password_change")
   displayName String   @map("display_name")
   avatarUrl   String?  @map("avatar_url")
   role        Role     @default(MEMBER)

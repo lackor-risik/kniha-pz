@@ -1,18 +1,31 @@
 import { NextResponse } from 'next/server';
-import { getAuthUser, handleApiError } from '@/lib/rbac';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
-        const user = await getAuthUser();
+        const session = await getServerSession(authOptions);
 
-        if (!user) {
+        if (!session?.user?.id) {
             return NextResponse.json({ user: null });
         }
 
-        return NextResponse.json({ user });
+        // Get member from database to check password status
+        const member = await prisma.member.findUnique({
+            where: { id: session.user.id },
+            select: { passwordHash: true, forcePasswordChange: true }
+        });
+
+        return NextResponse.json({
+            user: session.user,
+            hasPassword: !!member?.passwordHash,
+            forcePasswordChange: member?.forcePasswordChange ?? false
+        });
     } catch (error) {
-        return handleApiError(error);
+        console.error('API Error:', error);
+        return NextResponse.json({ error: 'Interná chyba servera' }, { status: 500 });
     }
 }

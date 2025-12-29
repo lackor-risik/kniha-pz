@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin, handleApiError } from '@/lib/rbac';
 import { validateRequest, memberCreateSchema } from '@/lib/validation';
@@ -56,8 +57,21 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Prepare data
+        const { password, forcePasswordChange, ...memberData } = validation.data;
+
+        // Hash password if provided
+        let passwordHash: string | undefined;
+        if (password && password.length >= 6) {
+            passwordHash = await bcrypt.hash(password, 12);
+        }
+
         const member = await prisma.member.create({
-            data: validation.data,
+            data: {
+                ...memberData,
+                passwordHash,
+                forcePasswordChange: passwordHash ? forcePasswordChange : false,
+            },
         });
 
         return NextResponse.json(member, { status: 201 });

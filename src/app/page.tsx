@@ -105,13 +105,22 @@ export default function DashboardPage() {
                             {session.user.name}
                         </h1>
                     </div>
-                    <button
-                        onClick={() => signOut({ callbackUrl: '/login' })}
-                        className="btn btn-ghost"
-                        style={{ color: 'rgba(255,255,255,0.8)' }}
-                    >
-                        Odhlásiť
-                    </button>
+                    <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
+                        <Link
+                            href="/settings"
+                            className="btn btn-ghost"
+                            style={{ color: 'rgba(255,255,255,0.8)' }}
+                        >
+                            ⚙️
+                        </Link>
+                        <button
+                            onClick={() => signOut({ callbackUrl: '/login' })}
+                            className="btn btn-ghost"
+                            style={{ color: 'rgba(255,255,255,0.8)' }}
+                        >
+                            Odhlásiť
+                        </button>
+                    </div>
                 </div>
 
                 {session.user.role === 'ADMIN' && (

@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BottomNav } from '@/components/BottomNav';
 
 interface Member {
@@ -21,10 +21,13 @@ export default function AdminMembersPage() {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [error, setError] = useState('');
+    const formRef = useRef<HTMLDivElement>(null);
     const [formData, setFormData] = useState({
         email: '',
         displayName: '',
         role: 'MEMBER',
+        password: '',
+        forcePasswordChange: true,
     });
 
     useEffect(() => {
@@ -69,10 +72,10 @@ export default function AdminMembersPage() {
                 return;
             }
 
-            setFormData({ email: '', displayName: '', role: 'MEMBER' });
+            setFormData({ email: '', displayName: '', role: 'MEMBER', password: '', forcePasswordChange: true });
             setShowForm(false);
             loadMembers();
-        } catch (error) {
+        } catch {
             setError('Chyba pripojenia k serveru');
         }
     }
@@ -115,7 +118,7 @@ export default function AdminMembersPage() {
 
             <div className="page-content">
                 {showForm && (
-                    <div className="card" style={{ marginBottom: 'var(--spacing-4)' }}>
+                    <div ref={formRef} className="card" style={{ marginBottom: 'var(--spacing-4)' }}>
                         <div className="card-header">
                             <strong>Nový člen</strong>
                         </div>
@@ -157,6 +160,41 @@ export default function AdminMembersPage() {
                                         <option value="ADMIN">Administrátor</option>
                                     </select>
                                 </div>
+
+                                {/* Password Section */}
+                                <div style={{
+                                    padding: 'var(--spacing-3)',
+                                    background: 'var(--color-gray-50)',
+                                    borderRadius: 'var(--radius-md)',
+                                    marginTop: 'var(--spacing-2)'
+                                }}>
+                                    <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, marginBottom: 'var(--spacing-2)' }}>
+                                        🔐 Heslo (voliteľné)
+                                    </div>
+                                    <div className="form-group" style={{ marginBottom: 'var(--spacing-2)' }}>
+                                        <input
+                                            type="password"
+                                            className="form-input"
+                                            value={formData.password}
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                            placeholder="Minimálne 6 znakov (nechajte prázdne ak nepotrebujete)"
+                                            minLength={6}
+                                        />
+                                    </div>
+                                    {formData.password.length > 0 && (
+                                        <div className="form-group" style={{ marginBottom: 0 }}>
+                                            <label className="form-switch">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.forcePasswordChange}
+                                                    onChange={(e) => setFormData({ ...formData, forcePasswordChange: e.target.checked })}
+                                                />
+                                                <span className="form-switch-toggle"></span>
+                                                <span style={{ fontSize: 'var(--font-size-sm)' }}>Vyžadovať zmenu hesla pri prihlásení</span>
+                                            </label>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className="card-footer" style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
                                 <button type="submit" className="btn btn-primary">Vytvoriť</button>
@@ -191,7 +229,14 @@ export default function AdminMembersPage() {
                 </div>
             </div>
 
-            <button className="fab" onClick={() => setShowForm(true)}>
+            <button className="fab" onClick={() => {
+                setShowForm(true);
+                setTimeout(() => {
+                    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const emailInput = formRef.current?.querySelector('input[type="email"]') as HTMLInputElement;
+                    emailInput?.focus();
+                }, 100);
+            }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />

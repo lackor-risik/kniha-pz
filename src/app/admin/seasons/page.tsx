@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BottomNav } from '@/components/BottomNav';
 
 interface Season {
@@ -20,6 +20,7 @@ export default function AdminSeasonsPage() {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [error, setError] = useState('');
+    const formRef = useRef<HTMLDivElement>(null);
     const [formData, setFormData] = useState({ name: '', dateFrom: '', dateTo: '', isActive: false });
 
     useEffect(() => {
@@ -99,7 +100,7 @@ export default function AdminSeasonsPage() {
 
             <div className="page-content">
                 {showForm && (
-                    <div className="card" style={{ marginBottom: 'var(--spacing-4)' }}>
+                    <div ref={formRef} className="card" style={{ marginBottom: 'var(--spacing-4)' }}>
                         <div className="card-header"><strong>Nová sezóna</strong></div>
                         <form onSubmit={handleSubmit}>
                             <div className="card-body">
@@ -171,7 +172,14 @@ export default function AdminSeasonsPage() {
                 </div>
             </div>
 
-            <button className="fab" onClick={() => setShowForm(true)}>
+            <button className="fab" onClick={() => {
+                setShowForm(true);
+                setTimeout(() => {
+                    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const input = formRef.current?.querySelector('input[type="text"]') as HTMLInputElement;
+                    input?.focus();
+                }, 100);
+            }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />

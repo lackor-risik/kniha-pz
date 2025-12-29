@@ -20,6 +20,8 @@ export async function GET(_request: NextRequest, { params }: Params) {
                 role: true,
                 isActive: true,
                 googleSub: true,
+                passwordHash: true,
+                forcePasswordChange: true,
                 createdAt: true,
                 updatedAt: true,
                 _count: {
@@ -93,18 +95,46 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
         await requireAdmin();
         const { id } = await params;
 
-        const member = await prisma.member.findUnique({ where: { id } });
+        const member = await prisma.member.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: {
+                        visits: true,
+                        announcements: true,
+                        cabinBookings: true,
+                    }
+                }
+            }
+        });
+
         if (!member) {
             return notFound('Člen nebol nájdený');
         }
 
-        // Soft delete - just deactivate
-        await prisma.member.update({
-            where: { id },
-            data: { isActive: false },
-        });
+        // Check for related records
+        const relatedCount = member._count.visits + member._count.announcements + member._count.cabinBookings;
 
-        return NextResponse.json({ success: true });
+        if (relatedCount > 0) {
+            return NextResponse.json({
+                error: 'Člen má súvisiace záznamy a nemôže byť odstránený',
+                canDelete: false,
+                relatedRecords: {
+                    visits: member._count.visits,
+                    announcements: member._count.announcements,
+                    cabinBookings: member._count.cabinBookings,
+                }
+            }, { status: 409 });
+        }
+
+        // Delete related records that are safe to delete (push subscriptions, announcement reads)
+        await prisma.pushSubscription.deleteMany({ where: { memberId: id } });
+        await prisma.announcementRead.deleteMany({ where: { memberId: id } });
+
+        // Hard delete the member
+        await prisma.member.delete({ where: { id } });
+
+        return NextResponse.json({ success: true, deleted: true });
     } catch (error) {
         return handleApiError(error);
     }

@@ -22,6 +22,8 @@ export const memberCreateSchema = z.object({
     displayName: z.string().min(1, 'Meno je povinné').max(100),
     role: z.enum(['ADMIN', 'MEMBER']).default('MEMBER'),
     isActive: z.boolean().default(true),
+    password: z.string().min(6, 'Heslo musí mať aspoň 6 znakov').optional().or(z.literal('')),
+    forcePasswordChange: z.boolean().optional().default(true),
 });
 
 export const memberUpdateSchema = memberCreateSchema.partial();
