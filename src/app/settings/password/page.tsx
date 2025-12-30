@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { BottomNav } from '@/components/BottomNav';
 
 function PasswordForm() {
     const { data: session, status } = useSession();
@@ -39,8 +41,8 @@ function PasswordForm() {
 
     if (status === 'loading' || hasPassword === null) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--spacing-8)' }}>
-                <div className="spinner" />
+            <div className="loading-overlay">
+                <div className="spinner spinner-lg"></div>
             </div>
         );
     }
@@ -104,148 +106,123 @@ function PasswordForm() {
 
     return (
         <div className="page">
-            <div className="page-header">
-                <button
-                    onClick={() => router.back()}
-                    className="btn btn-secondary"
-                    style={{ marginRight: 'var(--spacing-3)' }}
-                >
-                    ← Späť
-                </button>
-                <h1 className="page-title">Zmena hesla</h1>
-            </div>
+            <header className="page-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-3)' }}>
+                    {!isForceMode && (
+                        <Link href="/settings" className="btn btn-ghost btn-icon">
+                            ←
+                        </Link>
+                    )}
+                    <div>
+                        <h1 className="page-title">{hasPassword ? 'Zmena hesla' : 'Nastavenie hesla'}</h1>
+                        <p className="page-subtitle">
+                            {hasPassword ? 'Aktualizujte prihlasovacie heslo' : 'Nastavte si heslo pre prihlásenie'}
+                        </p>
+                    </div>
+                </div>
+            </header>
 
-            <div className="card" style={{ maxWidth: 500 }}>
+            <div className="page-content">
                 {success && (
-                    <div style={{
-                        padding: 'var(--spacing-3)',
-                        background: 'var(--color-success-bg)',
-                        color: 'var(--color-success)',
-                        borderRadius: 'var(--radius-md)',
-                        marginBottom: 'var(--spacing-4)',
-                        fontSize: 'var(--font-size-sm)'
-                    }}>
-                        Heslo bolo úspešne zmenené!
+                    <div className="alert alert-success" style={{ marginBottom: 'var(--spacing-4)' }}>
+                        ✅ Heslo bolo úspešne zmenené!
                     </div>
                 )}
 
                 {error && (
-                    <div style={{
-                        padding: 'var(--spacing-3)',
-                        background: 'var(--color-error-bg)',
-                        color: 'var(--color-error)',
-                        borderRadius: 'var(--radius-md)',
-                        marginBottom: 'var(--spacing-4)',
-                        fontSize: 'var(--font-size-sm)'
-                    }}>
+                    <div className="alert alert-error" style={{ marginBottom: 'var(--spacing-4)' }}>
                         {error}
                     </div>
                 )}
 
                 {isForceMode && (
-                    <div style={{
-                        padding: 'var(--spacing-3)',
-                        background: 'var(--color-warning-bg)',
-                        color: 'var(--color-warning)',
-                        borderRadius: 'var(--radius-md)',
-                        marginBottom: 'var(--spacing-4)',
-                        fontSize: 'var(--font-size-sm)'
-                    }}>
+                    <div className="alert alert-warning" style={{ marginBottom: 'var(--spacing-4)' }}>
                         ⚠️ Je potrebné zmeniť heslo pred pokračovaním.
                     </div>
                 )}
 
                 {!hasPassword && !isForceMode && (
-                    <div style={{
-                        padding: 'var(--spacing-3)',
-                        background: 'var(--color-info-bg)',
-                        color: 'var(--color-info)',
-                        borderRadius: 'var(--radius-md)',
-                        marginBottom: 'var(--spacing-4)',
-                        fontSize: 'var(--font-size-sm)'
-                    }}>
+                    <div className="alert alert-info" style={{ marginBottom: 'var(--spacing-4)' }}>
                         Momentálne nemáte nastavené heslo. Nastavte si ho pre prihlásenie e-mailom.
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    {hasPassword && (
-                        <div className="form-group">
-                            <label htmlFor="currentPassword" className="form-label">
-                                Aktuálne heslo
-                            </label>
-                            <input
-                                id="currentPassword"
-                                type="password"
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                required
-                                className="input"
-                                style={{ width: '100%' }}
-                            />
+                    <div className="card">
+                        <div className="card-body">
+                            {hasPassword && (
+                                <div className="form-group">
+                                    <label htmlFor="currentPassword" className="form-label form-label-required">
+                                        Aktuálne heslo
+                                    </label>
+                                    <input
+                                        id="currentPassword"
+                                        type="password"
+                                        value={currentPassword}
+                                        onChange={(e) => setCurrentPassword(e.target.value)}
+                                        required
+                                        className="form-input"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="form-group">
+                                <label htmlFor="newPassword" className="form-label form-label-required">
+                                    Nové heslo
+                                </label>
+                                <input
+                                    id="newPassword"
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    required
+                                    minLength={6}
+                                    className="form-input"
+                                    placeholder="Minimálne 6 znakov"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="confirmPassword" className="form-label form-label-required">
+                                    Potvrďte nové heslo
+                                </label>
+                                <input
+                                    id="confirmPassword"
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                    minLength={6}
+                                    className="form-input"
+                                />
+                            </div>
                         </div>
-                    )}
-
-                    <div className="form-group">
-                        <label htmlFor="newPassword" className="form-label">
-                            Nové heslo
-                        </label>
-                        <input
-                            id="newPassword"
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            required
-                            minLength={6}
-                            className="input"
-                            style={{ width: '100%' }}
-                            placeholder="Minimálne 6 znakov"
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="confirmPassword" className="form-label">
-                            Potvrďte nové heslo
-                        </label>
-                        <input
-                            id="confirmPassword"
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                            minLength={6}
-                            className="input"
-                            style={{ width: '100%' }}
-                        />
                     </div>
 
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="btn btn-primary btn-full"
-                        style={{ marginTop: 'var(--spacing-2)' }}
+                        className="btn btn-primary btn-full btn-lg"
+                        style={{ marginTop: 'var(--spacing-4)' }}
                     >
-                        {isLoading ? <div className="spinner" /> : 'Uložiť heslo'}
+                        {isLoading ? <span className="spinner"></span> : 'Uložiť heslo'}
                     </button>
                 </form>
             </div>
+
+            {!isForceMode && <BottomNav />}
         </div>
     );
 }
 
 export default function PasswordPage() {
     return (
-        <div className="page">
-            <div className="page-header">
-                <h1 className="page-title">Zmena hesla</h1>
+        <Suspense fallback={
+            <div className="loading-overlay">
+                <div className="spinner spinner-lg"></div>
             </div>
-            <Suspense fallback={
-                <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--spacing-8)' }}>
-                    <div className="spinner" />
-                </div>
-            }>
-                <PasswordForm />
-            </Suspense>
-        </div>
+        }>
+            <PasswordForm />
+        </Suspense>
     );
 }

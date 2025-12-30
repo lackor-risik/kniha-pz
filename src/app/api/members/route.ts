@@ -15,6 +15,7 @@ export async function GET() {
                 email: true,
                 displayName: true,
                 avatarUrl: true,
+                avatarData: true,
                 role: true,
                 isActive: true,
                 googleSub: true,

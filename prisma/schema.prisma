@@ -27,6 +27,7 @@ model Member {
   forcePasswordChange Boolean @default(false) @map("force_password_change")
   displayName String   @map("display_name")
   avatarUrl   String?  @map("avatar_url")
+  avatarData  String?  @map("avatar_data") // Base64 cached avatar image
   role        Role     @default(MEMBER)
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")

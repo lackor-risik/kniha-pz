@@ -16,13 +16,14 @@ export async function GET() {
         // Get member from database to check password status
         const member = await prisma.member.findUnique({
             where: { id: session.user.id },
-            select: { passwordHash: true, forcePasswordChange: true }
+            select: { passwordHash: true, forcePasswordChange: true, avatarUrl: true, avatarData: true }
         });
 
         return NextResponse.json({
             user: session.user,
             hasPassword: !!member?.passwordHash,
-            forcePasswordChange: member?.forcePasswordChange ?? false
+            forcePasswordChange: member?.forcePasswordChange ?? false,
+            avatarUrl: member?.avatarData || member?.avatarUrl || null
         });
     } catch (error) {
         console.error('API Error:', error);

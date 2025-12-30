@@ -103,6 +103,22 @@ export const authOptions: NextAuthOptions = {
                     return '/unauthorized';
                 }
 
+                // Download and cache avatar as base64
+                let avatarData: string | null = null;
+                if (user.image) {
+                    try {
+                        const response = await fetch(user.image);
+                        if (response.ok) {
+                            const buffer = await response.arrayBuffer();
+                            const contentType = response.headers.get('content-type') || 'image/jpeg';
+                            const base64 = Buffer.from(buffer).toString('base64');
+                            avatarData = `data:${contentType};base64,${base64}`;
+                        }
+                    } catch (error) {
+                        console.error('Failed to download avatar:', error);
+                    }
+                }
+
                 // First login - assign google_sub
                 if (!member.googleSub && account?.providerAccountId) {
                     await prisma.member.update({
@@ -110,6 +126,16 @@ export const authOptions: NextAuthOptions = {
                         data: {
                             googleSub: account.providerAccountId,
                             avatarUrl: user.image || member.avatarUrl,
+                            avatarData: avatarData || member.avatarData,
+                        },
+                    });
+                } else if (avatarData) {
+                    // Update avatar on every login if we got a new one
+                    await prisma.member.update({
+                        where: { id: member.id },
+                        data: {
+                            avatarUrl: user.image,
+                            avatarData: avatarData
                         },
                     });
                 }

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 import { BottomNav } from '@/components/BottomNav';
+import { Avatar } from '@/components/Avatar';
 
 interface Member {
     id: string;
@@ -13,6 +14,8 @@ interface Member {
     role: string;
     isActive: boolean;
     googleSub: string | null;
+    avatarUrl: string | null;
+    avatarData: string | null;
 }
 
 export default function AdminMembersPage() {
@@ -209,9 +212,7 @@ export default function AdminMembersPage() {
                 <div className="card">
                     {members.map((member) => (
                         <Link key={member.id} href={`/admin/members/${member.id}`} className="list-item">
-                            <div className="avatar">
-                                {member.displayName.charAt(0).toUpperCase()}
-                            </div>
+                            <Avatar src={member.avatarData || member.avatarUrl} name={member.displayName} size={40} />
                             <div className="list-item-content">
                                 <div className="list-item-title">{member.displayName}</div>
                                 <div className="list-item-subtitle">{member.email}</div>
