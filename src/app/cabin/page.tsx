@@ -43,10 +43,21 @@ export default function CabinPage() {
         try {
             const year = currentMonth.getFullYear();
             const month = currentMonth.getMonth();
-            const from = new Date(year, month, 1).toISOString();
-            const to = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
 
-            const res = await fetch(`/api/cabin-bookings?from=${from}&to=${to}`);
+            // Calculate grid start date (same logic as getDaysInMonth)
+            const firstDayOfMonth = new Date(year, month, 1);
+            const startDayOfWeek = firstDayOfMonth.getDay() || 7; // 1 (Mon) - 7 (Sun)
+            const daysFromPrevMonth = startDayOfWeek - 1;
+
+            const fromDate = new Date(year, month, 1 - daysFromPrevMonth);
+            fromDate.setHours(0, 0, 0, 0);
+
+            // Calculate grid end date (42 days total)
+            const toDate = new Date(fromDate);
+            toDate.setDate(fromDate.getDate() + 42); // 6 rows * 7 days
+            toDate.setHours(23, 59, 59, 999);
+
+            const res = await fetch(`/api/cabin-bookings?from=${fromDate.toISOString()}&to=${toDate.toISOString()}`);
             const data = await res.json();
             setBookings(data || []);
         } catch (error) {

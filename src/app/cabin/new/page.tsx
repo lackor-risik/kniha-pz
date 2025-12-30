@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/BottomNav';
 
@@ -11,7 +11,7 @@ interface Cabin {
     name: string;
 }
 
-export default function NewBookingPage() {
+function NewBookingContent() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [cabins, setCabins] = useState<Cabin[]>([]);
@@ -207,5 +207,17 @@ export default function NewBookingPage() {
 
             <BottomNav />
         </div>
+    );
+}
+
+export default function NewBookingPage() {
+    return (
+        <Suspense fallback={
+            <div className="loading-overlay">
+                <div className="spinner spinner-lg"></div>
+            </div>
+        }>
+            <NewBookingContent />
+        </Suspense>
     );
 }
