@@ -48,6 +48,15 @@ export default function CatchDetailPage() {
     const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const handleBack = () => {
+        // Try to go back in history, fallback to visit detail
+        if (window.history.length > 1) {
+            router.back();
+        } else if (catchData) {
+            router.push(`/visits/${catchData.visit.id}`);
+        }
+    };
+
     useEffect(() => {
         if (status === 'unauthenticated') {
             router.push('/login');
@@ -156,9 +165,9 @@ export default function CatchDetailPage() {
         <div className="page">
             <header className="page-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-3)', flex: 1 }}>
-                    <Link href={`/visits/${catchData.visit.id}`} className="btn btn-ghost btn-icon">
+                    <button onClick={handleBack} className="btn btn-ghost btn-icon">
                         ←
-                    </Link>
+                    </button>
                     <div style={{ flex: 1 }}>
                         <h1 className="page-title">{catchData.species.name}</h1>
                         <p className="page-subtitle">{catchData.visit.member.displayName}</p>
@@ -212,7 +221,7 @@ export default function CatchDetailPage() {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: 'var(--color-gray-500)' }}>Čas lovu</span>
-                                <span style={{ fontWeight: 500 }}>{new Date(catchData.huntedAt).toLocaleString('sk')}</span>
+                                <span style={{ fontWeight: 500 }}>{new Date(catchData.huntedAt).toLocaleString('sk', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: 'var(--color-gray-500)' }}>Strelec</span>

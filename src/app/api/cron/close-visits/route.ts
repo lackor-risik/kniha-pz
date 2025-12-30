@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { handleApiError } from '@/lib/rbac';
 
 // This endpoint is called by a cron job to close all unclosed visits
-// It should be called at 0:05 AM daily
+// It should be called at 23:59 (11:59 PM) daily - for SK timezone, use 22:59 UTC
 // Protect with CRON_SECRET environment variable
 
 export async function POST(request: NextRequest) {
@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Close all unclosed visits with endDate = midnight of today (0:00)
+        // Close all unclosed visits with endDate = 23:59 of today
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        today.setHours(23, 59, 0, 0);
 
         const result = await prisma.visit.updateMany({
             where: { endDate: null },

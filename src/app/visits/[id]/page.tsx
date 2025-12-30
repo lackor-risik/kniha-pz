@@ -272,14 +272,14 @@ export default function VisitDetailPage() {
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: 'var(--color-gray-500)' }}>Začiatok</span>
                                 <span style={{ fontWeight: 500 }}>
-                                    {new Date(visit.startDate).toLocaleString('sk')}
+                                    {new Date(visit.startDate).toLocaleString('sk', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             </div>
                             {visit.endDate && (
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <span style={{ color: 'var(--color-gray-500)' }}>Koniec</span>
                                     <span style={{ fontWeight: 500 }}>
-                                        {new Date(visit.endDate).toLocaleString('sk')}
+                                        {new Date(visit.endDate).toLocaleString('sk', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
                             )}
@@ -346,7 +346,7 @@ export default function VisitDetailPage() {
                                 <div className="list-item-content">
                                     <div className="list-item-title">{c.species.name}</div>
                                     <div className="list-item-subtitle">
-                                        {c.huntingLocality.name} • {new Date(c.huntedAt).toLocaleString('sk')}
+                                        {c.huntingLocality.name} • {new Date(c.huntedAt).toLocaleString('sk', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                         {c.shooterType === 'GUEST' && ` • 👤 ${c.guestShooterName}`}
                                     </div>
                                     <div className="list-item-meta">
@@ -390,7 +390,7 @@ export default function VisitDetailPage() {
                                     max={maxDateTime}
                                 />
                                 <p className="form-hint">
-                                    Maximálne teraz ({new Date().toLocaleString('sk')})
+                                    Maximálne teraz ({new Date().toLocaleString('sk', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })})
                                 </p>
                             </div>
                         </div>

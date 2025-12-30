@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BottomNav } from '@/components/BottomNav';
@@ -18,9 +18,13 @@ interface Booking {
 
 export default function CabinPage() {
     const { data: session, status } = useSession();
+    const router = useRouter();
     const [bookings, setBookings] = useState<Booking[]>([]);
+    const [allUpcomingBookings, setAllUpcomingBookings] = useState<Booking[]>([]);
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [loading, setLoading] = useState(true);
+    const [showNewBookingModal, setShowNewBookingModal] = useState(false);
+    const [newBookingStartDate, setNewBookingStartDate] = useState('');
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -31,6 +35,7 @@ export default function CabinPage() {
     useEffect(() => {
         if (session?.user) {
             loadBookings();
+            loadAllUpcomingBookings();
         }
     }, [session, currentMonth]);
 
@@ -48,6 +53,22 @@ export default function CabinPage() {
             console.error('Failed to load bookings:', error);
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function loadAllUpcomingBookings() {
+        try {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const from = today.toISOString();
+            // Load bookings for the next 2 years
+            const to = new Date(today.getFullYear() + 2, today.getMonth(), today.getDate()).toISOString();
+
+            const res = await fetch(`/api/cabin-bookings?from=${from}&to=${to}`);
+            const data = await res.json();
+            setAllUpcomingBookings(data || []);
+        } catch (error) {
+            console.error('Failed to load upcoming bookings:', error);
         }
     }
 
@@ -79,17 +100,21 @@ export default function CabinPage() {
         return days;
     }
 
-    function hasBooking(date: Date) {
+    function getBookingForDate(date: Date): Booking | null {
         const dateStart = new Date(date);
         dateStart.setHours(0, 0, 0, 0);
         const dateEnd = new Date(date);
         dateEnd.setHours(23, 59, 59, 999);
 
-        return bookings.some((b) => {
+        return bookings.find((b) => {
             const bookingStart = new Date(b.startAt);
             const bookingEnd = new Date(b.endAt);
             return bookingStart <= dateEnd && bookingEnd >= dateStart;
-        });
+        }) || null;
+    }
+
+    function hasBooking(date: Date) {
+        return getBookingForDate(date) !== null;
     }
 
     function isToday(date: Date) {
@@ -97,11 +122,33 @@ export default function CabinPage() {
         return date.toDateString() === today.toDateString();
     }
 
+    function handleDayClick(date: Date) {
+        const booking = getBookingForDate(date);
+        if (booking) {
+            // Navigate to booking detail
+            router.push(`/cabin/booking/${booking.id}`);
+        } else {
+            // Open new booking dialog with pre-filled date
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            setNewBookingStartDate(`${year}-${month}-${day}`);
+            setShowNewBookingModal(true);
+        }
+    }
+
+    function handleNewBookingSubmit() {
+        if (newBookingStartDate) {
+            router.push(`/cabin/new?startDate=${newBookingStartDate}`);
+        }
+        setShowNewBookingModal(false);
+    }
+
     const days = getDaysInMonth(currentMonth);
     const monthName = currentMonth.toLocaleDateString('sk', { month: 'long', year: 'numeric' });
 
-    // Upcoming bookings (from today)
-    const upcomingBookings = bookings
+    // All upcoming bookings (from today, sorted)
+    const sortedUpcomingBookings = allUpcomingBookings
         .filter((b) => new Date(b.endAt) >= new Date())
         .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
 
@@ -150,6 +197,8 @@ export default function CabinPage() {
                             <div
                                 key={idx}
                                 className={`calendar-day ${!day.isCurrentMonth ? 'other-month' : ''} ${isToday(day.date) ? 'today' : ''} ${hasBooking(day.date) ? 'has-booking' : ''}`}
+                                onClick={() => handleDayClick(day.date)}
+                                style={{ cursor: 'pointer' }}
                             >
                                 <span>{day.date.getDate()}</span>
                                 {hasBooking(day.date) && <div className="calendar-booking-dot"></div>}
@@ -160,14 +209,14 @@ export default function CabinPage() {
 
                 {/* Upcoming Bookings */}
                 <h2 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600, marginBottom: 'var(--spacing-3)' }}>
-                    Nadchádzajúce rezervácie
+                    Nadchádzajúce rezervácie ({sortedUpcomingBookings.length})
                 </h2>
 
                 {loading ? (
                     <div style={{ textAlign: 'center', padding: 'var(--spacing-4)' }}>
                         <div className="spinner" style={{ margin: '0 auto' }}></div>
                     </div>
-                ) : upcomingBookings.length === 0 ? (
+                ) : sortedUpcomingBookings.length === 0 ? (
                     <div className="card">
                         <div className="card-body" style={{ textAlign: 'center' }}>
                             <p style={{ color: 'var(--color-gray-500)' }}>Žiadne nadchádzajúce rezervácie</p>
@@ -175,7 +224,7 @@ export default function CabinPage() {
                     </div>
                 ) : (
                     <div className="card">
-                        {upcomingBookings.map((booking) => (
+                        {sortedUpcomingBookings.map((booking) => (
                             <Link key={booking.id} href={`/cabin/booking/${booking.id}`} className="list-item">
                                 <div style={{
                                     width: 48,
@@ -214,6 +263,37 @@ export default function CabinPage() {
                     <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
             </Link>
+
+            {/* New Booking Modal */}
+            {showNewBookingModal && (
+                <div className="modal-overlay" onClick={() => setShowNewBookingModal(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="modal-title">Nová rezervácia</h3>
+                            <button className="modal-close" onClick={() => setShowNewBookingModal(false)}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <p style={{ marginBottom: 'var(--spacing-3)' }}>
+                                Chcete vytvoriť novú rezerváciu od <strong>{newBookingStartDate.split('-').reverse().join('.')}</strong>?
+                            </p>
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => setShowNewBookingModal(false)}
+                            >
+                                Zrušiť
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleNewBookingSubmit}
+                            >
+                                Pokračovať
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <BottomNav />
         </div>

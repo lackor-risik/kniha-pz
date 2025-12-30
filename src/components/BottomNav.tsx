@@ -49,22 +49,21 @@ const CalendarIcon = () => (
     </svg>
 );
 
-const ListIcon = () => (
+const PlanIcon = () => (
     <svg className="bottom-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <line x1="8" y1="6" x2="21" y2="6" />
-        <line x1="8" y1="12" x2="21" y2="12" />
-        <line x1="8" y1="18" x2="21" y2="18" />
-        <line x1="3" y1="6" x2="3.01" y2="6" />
-        <line x1="3" y1="12" x2="3.01" y2="12" />
-        <line x1="3" y1="18" x2="3.01" y2="18" />
+        <rect x="3" y="14" width="4" height="7" rx="1" />
+        <rect x="10" y="10" width="4" height="11" rx="1" />
+        <rect x="17" y="6" width="4" height="15" rx="1" />
+        <line x1="3" y1="3" x2="3" y2="6" />
+        <polyline points="6 5 3 3 0 5" transform="translate(3, 0)" />
     </svg>
 );
 
 const navItems: NavItem[] = [
     { href: '/', label: 'Domov', icon: <HomeIcon /> },
     { href: '/visits', label: 'Návštevy', icon: <MapIcon /> },
-    { href: '/catches', label: 'Úlovky', icon: <ListIcon /> },
-    { href: '/harvest-plan', label: 'Plán', icon: <TargetIcon /> },
+    { href: '/catches', label: 'Úlovky', icon: <TargetIcon /> },
+    { href: '/harvest-plan', label: 'Plán', icon: <PlanIcon /> },
     { href: '/announcements', label: 'Oznamy', icon: <BellIcon /> },
 ];
 

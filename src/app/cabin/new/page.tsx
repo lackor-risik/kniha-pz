@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/BottomNav';
@@ -38,6 +38,16 @@ export default function NewBookingPage() {
             loadCabins();
         }
     }, [session]);
+
+    // Get startDate from URL params
+    const searchParams = useSearchParams();
+    const startDateParam = searchParams.get('startDate');
+
+    useEffect(() => {
+        if (startDateParam) {
+            setFormData((prev) => ({ ...prev, startDate: startDateParam }));
+        }
+    }, [startDateParam]);
 
     async function loadCabins() {
         try {
@@ -87,10 +97,9 @@ export default function NewBookingPage() {
         }
     }
 
-    // Get tomorrow as min date
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const minDate = tomorrow.toISOString().split('T')[0];
+    // Get today as min date (allow same-day bookings)
+    const today = new Date();
+    const minDate = today.toISOString().split('T')[0];
 
     if (status === 'loading' || loading) {
         return (

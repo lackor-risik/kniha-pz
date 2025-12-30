@@ -133,8 +133,23 @@ function VisitsContent() {
                                 <div className="list-item-content">
                                     <div className="list-item-title">{visit.locality.name}</div>
                                     <div className="list-item-subtitle">
-                                        {visit.member.displayName} • {new Date(visit.startDate).toLocaleString('sk')}
-                                        {visit.endDate && ` - ${new Date(visit.endDate).toLocaleString('sk')}`}
+                                        {visit.member.displayName} • {(() => {
+                                            const start = new Date(visit.startDate);
+                                            const startDateStr = start.toLocaleString('sk', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                                            if (!visit.endDate) return startDateStr;
+
+                                            const end = new Date(visit.endDate);
+                                            const sameDay = start.toDateString() === end.toDateString();
+
+                                            if (sameDay) {
+                                                const endTimeStr = end.toLocaleString('sk', { hour: '2-digit', minute: '2-digit' });
+                                                return `${startDateStr} - ${endTimeStr}`;
+                                            } else {
+                                                const endDateStr = end.toLocaleString('sk', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                                                return `${startDateStr} - ${endDateStr}`;
+                                            }
+                                        })()}
                                         {visit.hasGuest && ' • 👤 Hosť'}
                                     </div>
                                 </div>

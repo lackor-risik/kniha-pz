@@ -197,7 +197,7 @@ export default function CatchesListPage() {
                                                     {getShooterName(c)}
                                                 </div>
                                                 <div className="list-item-subtitle">
-                                                    {c.huntingLocality.name} • {new Date(c.huntedAt).toLocaleString('sk')}
+                                                    {c.huntingLocality.name} • {new Date(c.huntedAt).toLocaleString('sk', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                                     {c._count.photos > 0 && ` • 📷 ${c._count.photos}`}
                                                 </div>
                                             </div>

@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
         const start = new Date(startAt);
         const end = new Date(endAt);
 
-        // Validate dates
-        if (end <= start) {
-            return badRequest('Dátum konca musí byť po dátume začiatku');
+        // Validate dates - allow same day (end >= start)
+        if (end < start) {
+            return badRequest('Dátum konca nemôže byť pred dátumom začiatku');
         }
 
         // Check cabin exists
