@@ -5,6 +5,8 @@ import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/BottomNav';
+import { ConfirmModal } from '@/components/ConfirmModal';
+import { PhotoLightbox } from '@/components/PhotoLightbox';
 
 interface CatchDetail {
     id: string;
@@ -46,6 +48,7 @@ export default function CatchDetailPage() {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
+    const [deletePhotoId, setDeletePhotoId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleBack = () => {
@@ -119,11 +122,11 @@ export default function CatchDetailPage() {
         }
     }
 
-    async function handlePhotoDelete(photoId: string) {
-        if (!confirm('Naozaj chcete zmazať túto fotku?')) return;
+    async function confirmPhotoDelete() {
+        if (!deletePhotoId) return;
 
         try {
-            const res = await fetch(`/api/catch-photos/${photoId}/image`, {
+            const res = await fetch(`/api/catch-photos/${deletePhotoId}/image`, {
                 method: 'DELETE',
             });
 
@@ -136,6 +139,8 @@ export default function CatchDetailPage() {
             loadCatch();
         } catch (error) {
             setError('Chyba pripojenia k serveru');
+        } finally {
+            setDeletePhotoId(null);
         }
     }
 
@@ -250,7 +255,7 @@ export default function CatchDetailPage() {
                     {catchData.photos.map((photo) => (
                         <div key={photo.id} className="photo-item" style={{ cursor: 'pointer' }}>
                             <img
-                                src={`/api/catch-photos/${photo.id}/image`}
+                                src={`/api/catch-photos/${photo.id}/image?thumb=1`}
                                 alt="Úlovok"
                                 onClick={() => setLightboxPhoto(`/api/catch-photos/${photo.id}/image`)}
                             />
@@ -259,7 +264,7 @@ export default function CatchDetailPage() {
                                     className="photo-remove"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handlePhotoDelete(photo.id);
+                                        setDeletePhotoId(photo.id);
                                     }}
                                 >
                                     ×
@@ -292,55 +297,22 @@ export default function CatchDetailPage() {
             </div>
 
             {/* Photo Lightbox */}
-            {lightboxPhoto && (
-                <div
-                    onClick={() => setLightboxPhoto(null)}
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        background: 'rgba(0, 0, 0, 0.9)',
-                        zIndex: 9999,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        padding: 'var(--spacing-4)'
-                    }}
-                >
-                    <button
-                        onClick={() => setLightboxPhoto(null)}
-                        style={{
-                            position: 'absolute',
-                            top: 'var(--spacing-4)',
-                            right: 'var(--spacing-4)',
-                            background: 'rgba(255,255,255,0.2)',
-                            border: 'none',
-                            color: 'white',
-                            fontSize: '24px',
-                            width: '44px',
-                            height: '44px',
-                            borderRadius: 'var(--radius-full)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        ×
-                    </button>
-                    <img
-                        src={lightboxPhoto}
-                        alt="Fotka úlovku"
-                        style={{
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                            objectFit: 'contain',
-                            borderRadius: 'var(--radius-lg)'
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                </div>
-            )}
+            <PhotoLightbox
+                src={lightboxPhoto}
+                alt="Fotka úlovku"
+                onClose={() => setLightboxPhoto(null)}
+            />
+
+            {/* Delete Photo Confirm Modal */}
+            <ConfirmModal
+                isOpen={deletePhotoId !== null}
+                title="Zmazať fotku?"
+                message="Naozaj chcete zmazať túto fotku? Táto akcia je nezvratná."
+                confirmText="Zmazať"
+                cancelText="Zrušiť"
+                onConfirm={confirmPhotoDelete}
+                onCancel={() => setDeletePhotoId(null)}
+            />
 
             <BottomNav />
         </div>

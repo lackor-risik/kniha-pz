@@ -1,9 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import sharp from 'sharp';
 
 export interface StorageFile {
     key: string;
+    thumbnailKey?: string;
     mimeType: string;
     sizeBytes: number;
 }
@@ -30,10 +32,20 @@ export function validateFile(mimeType: string, sizeBytes: number): { valid: bool
     return { valid: true };
 }
 
+const THUMBNAIL_WIDTH = 300;
+const THUMBNAIL_QUALITY = 80;
+
 /**
- * Save file to storage
+ * Get thumbnail key from original key
  */
-export async function saveFile(buffer: Buffer, mimeType: string): Promise<StorageFile> {
+export function getThumbnailKey(key: string): string {
+    return `thumb_${key}`;
+}
+
+/**
+ * Save file to storage with optional thumbnail generation
+ */
+export async function saveFile(buffer: Buffer, mimeType: string, generateThumbnail = false): Promise<StorageFile> {
     const validation = validateFile(mimeType, buffer.length);
     if (!validation.valid) {
         throw new Error(validation.error);
@@ -47,11 +59,33 @@ export async function saveFile(buffer: Buffer, mimeType: string): Promise<Storag
     // Ensure directory exists
     await fs.mkdir(uploadsPath, { recursive: true });
 
-    // Write file
+    // Write original file
     await fs.writeFile(filePath, buffer);
+
+    let thumbnailKey: string | undefined;
+
+    // Generate thumbnail if requested
+    if (generateThumbnail) {
+        try {
+            thumbnailKey = getThumbnailKey(key);
+            const thumbnailPath = path.join(uploadsPath, thumbnailKey);
+
+            await sharp(buffer)
+                .resize(THUMBNAIL_WIDTH, null, {
+                    withoutEnlargement: true,
+                    fit: 'inside'
+                })
+                .jpeg({ quality: THUMBNAIL_QUALITY })
+                .toFile(thumbnailPath);
+        } catch (error) {
+            console.error('Failed to generate thumbnail:', error);
+            thumbnailKey = undefined;
+        }
+    }
 
     return {
         key,
+        thumbnailKey,
         mimeType,
         sizeBytes: buffer.length,
     };

@@ -82,8 +82,8 @@ export async function POST(request: NextRequest, { params }: Params) {
         // Read file buffer
         const buffer = Buffer.from(await file.arrayBuffer());
 
-        // Save file to storage
-        const storageResult = await saveFile(buffer, file.type);
+        // Save file to storage with thumbnail
+        const storageResult = await saveFile(buffer, file.type, true);
 
         // Create photo record
         const photo = await prisma.catchPhoto.create({

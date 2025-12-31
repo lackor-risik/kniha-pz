@@ -1,10 +1,11 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BottomNav } from '@/components/BottomNav';
+import { Avatar } from '@/components/Avatar';
 
 interface DashboardStats {
     activeVisit: {
@@ -26,8 +27,10 @@ interface DashboardStats {
 
 export default function DashboardPage() {
     const { data: session, status } = useSession();
+    const router = useRouter();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -38,6 +41,15 @@ export default function DashboardPage() {
     useEffect(() => {
         if (session?.user) {
             loadDashboard();
+            // Load avatar URL
+            fetch('/api/me')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.avatarUrl) {
+                        setAvatarUrl(data.avatarUrl);
+                    }
+                })
+                .catch(() => { });
         }
     }, [session]);
 
@@ -99,39 +111,59 @@ export default function DashboardPage() {
                 paddingBottom: 'var(--spacing-8)',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--spacing-4)' }}>
-                    <div>
-                        <p style={{ fontSize: 'var(--font-size-sm)', opacity: 0.9 }}>Vitajte späť,</p>
-                        <h1 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 600 }}>
-                            {session.user.name}
-                        </h1>
+                    <div
+                        onClick={() => router.push('/settings')}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--spacing-3)',
+                            cursor: 'pointer',
+                            position: 'relative'
+                        }}
+                    >
+                        <div style={{ position: 'relative' }}>
+                            <Avatar src={avatarUrl} name={session.user.name || ''} size={50} />
+                            <div style={{
+                                position: 'absolute',
+                                bottom: -2,
+                                right: -2,
+                                width: 22,
+                                height: 22,
+                                background: 'rgba(255,255,255,0.95)',
+                                borderRadius: 'var(--radius-full)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '12px',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                            }}>
+                                ⚙️
+                            </div>
+                        </div>
+                        <div>
+                            <p style={{ fontSize: 'var(--font-size-sm)', opacity: 0.9 }}>{session.user.name}</p>
+                            <p style={{ fontSize: 'var(--font-size-xs)', opacity: 0.7 }}>Nastavenia profilu →</p>
+                        </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
-                        <Link
-                            href="/settings"
-                            className="btn btn-ghost"
-                            style={{ color: 'rgba(255,255,255,0.8)' }}
-                        >
-                            ⚙️
-                        </Link>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 'var(--spacing-1)' }}>
                         <button
-                            onClick={() => signOut({ callbackUrl: '/login' })}
+                            onClick={(e) => { e.stopPropagation(); signOut({ callbackUrl: '/login' }); }}
                             className="btn btn-ghost"
                             style={{ color: 'rgba(255,255,255,0.8)' }}
                         >
                             Odhlásiť
                         </button>
+                        {session.user.role === 'ADMIN' && (
+                            <Link
+                                href="/admin"
+                                className="badge badge-warning"
+                                style={{ fontSize: 'var(--font-size-xs)' }}
+                            >
+                                ⚙️ Admin
+                            </Link>
+                        )}
                     </div>
                 </div>
-
-                {session.user.role === 'ADMIN' && (
-                    <Link
-                        href="/admin"
-                        className="badge badge-warning"
-                        style={{ marginTop: 'var(--spacing-2)' }}
-                    >
-                        ⚙️ Admin
-                    </Link>
-                )}
 
                 {stats?.activeSeason && (
                     <div style={{

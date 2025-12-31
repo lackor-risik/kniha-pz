@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, handleApiError, notFound, canAccessResource, forbidden, isAdmin } from '@/lib/rbac';
-import { getFile, deleteFile } from '@/lib/storage';
+import { getFile, deleteFile, getThumbnailKey } from '@/lib/storage';
 
 type Params = { params: Promise<{ photoId: string }> };
 
-export async function GET(_request: NextRequest, { params }: Params) {
+export async function GET(request: NextRequest, { params }: Params) {
     try {
         await requireAuth();
         const { photoId } = await params;
+        const { searchParams } = new URL(request.url);
+        const useThumbnail = searchParams.get('thumb') === '1';
 
         const photo = await prisma.catchPhoto.findUnique({
             where: { id: photoId },
@@ -18,7 +20,22 @@ export async function GET(_request: NextRequest, { params }: Params) {
             return notFound('Fotka nebola nájdená');
         }
 
-        const fileBuffer = await getFile(photo.storageKey);
+        // Try to get thumbnail first if requested
+        let fileBuffer: Buffer | null = null;
+        let contentType = photo.mimeType;
+
+        if (useThumbnail) {
+            const thumbnailKey = getThumbnailKey(photo.storageKey);
+            fileBuffer = await getFile(thumbnailKey);
+            if (fileBuffer) {
+                contentType = 'image/jpeg'; // Thumbnails are always JPEG
+            }
+        }
+
+        // Fallback to original if no thumbnail or not requested
+        if (!fileBuffer) {
+            fileBuffer = await getFile(photo.storageKey);
+        }
 
         if (!fileBuffer) {
             return notFound('Súbor nebol nájdený');
@@ -26,8 +43,8 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
         return new Response(new Uint8Array(fileBuffer), {
             headers: {
-                'Content-Type': photo.mimeType,
-                'Content-Length': photo.sizeBytes.toString(),
+                'Content-Type': contentType,
+                'Content-Length': fileBuffer.length.toString(),
                 'Cache-Control': 'private, max-age=31536000',
             },
         });
@@ -64,8 +81,9 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
             return forbidden('Fotky z ukončenej návštevy nie je možné mazať');
         }
 
-        // Delete from storage
+        // Delete from storage (both original and thumbnail)
         await deleteFile(photo.storageKey);
+        await deleteFile(getThumbnailKey(photo.storageKey));
 
         // Delete from database
         await prisma.catchPhoto.delete({ where: { id: photoId } });
