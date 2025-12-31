@@ -1,7 +1,7 @@
 # Kniha PZ - Evidencia poľovného revíru
 
 [![Release](https://img.shields.io/badge/release-v1.0.0-green.svg)](https://github.com/lackor-risik/kniha-pz/releases/tag/v1.0.0)
-[![Next.js](https://img.shields.io/badge/Next.js-14.2-black.svg)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.1-black.svg)](https://nextjs.org/)
 
 Mobilná PWA aplikácia na evidenciu poľovného revíru, návštev, úlovkov, oznámenia a rezervácie chaty.
 
@@ -10,7 +10,7 @@ Mobilná PWA aplikácia na evidenciu poľovného revíru, návštev, úlovkov, o
 - **Návštevy revíru** - evidencia príchodov a odchodov členov z lokalít
 - **Úlovky** - záznam úlovkov s podrobnými informáciami a fotkami (fullscreen prehliadanie)
 - **Plán lovu** - sledovanie sezónnych kvót a čerpania
-- **Oznamy** - zdieľanie informácií s push notifikáciami
+- **Oznamy** - zdieľanie informácií s push notifikáciami a rich text editorom (formátovanie, obrázky)
 - **Rezervácie chaty** - kalendár rezervácií poľovníckej chaty
 - **Administrácia** - správa členov, lokalít, druhov zveri a sezón
 - **Admin hesla** - nastavenie hesla a vynútená zmena pri prvom prihlásení
@@ -178,6 +178,7 @@ docker-compose exec -T db psql -U kniha_pz kniha_pz < backup.sql
 | `VAPID_PUBLIC_KEY` | VAPID verejný kľúč pre push notifikácie | ❌ |
 | `VAPID_PRIVATE_KEY` | VAPID súkromný kľúč | ❌ |
 | `VAPID_SUBJECT` | VAPID subject (mailto: alebo URL) | ❌ |
+| `UPLOADS_PATH` | Cesta k uploadovaným súborom | ❌ (default: ./data/uploads) |
 | `CRON_SECRET` | Tajný kľúč pre cron endpointy | ❌ |
 
 ### Google OAuth Setup
