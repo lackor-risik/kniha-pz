@@ -361,13 +361,6 @@ export default function VisitDetailPage() {
                 )}
             </div>
 
-            {/* FAB for new catch if active */}
-            {visit.isOpen && canEdit && (
-                <Link href={`/visits/${visit.id}/catches/new`} className="fab">
-                    <span style={{ fontSize: '24px' }}>🎯</span>
-                </Link>
-            )}
-
             {/* End Visit Modal */}
             {showEndModal && (
                 <div className="modal-overlay" onClick={() => setShowEndModal(false)}>

@@ -148,10 +148,16 @@ export default function DashboardPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 'var(--spacing-1)' }}>
                         <button
                             onClick={(e) => { e.stopPropagation(); signOut({ callbackUrl: '/login' }); }}
-                            className="btn btn-ghost"
-                            style={{ color: 'rgba(255,255,255,0.8)' }}
+                            className="badge"
+                            style={{
+                                background: 'rgba(255,255,255,0.2)',
+                                color: 'white',
+                                cursor: 'pointer',
+                                border: 'none',
+                                fontSize: 'var(--font-size-xs)'
+                            }}
                         >
-                            Odhlásiť
+                            🚪 Odhlásiť
                         </button>
                         {session.user.role === 'ADMIN' && (
                             <Link
