@@ -21,6 +21,7 @@ export async function GET() {
                 googleSub: true,
                 createdAt: true,
                 updatedAt: true,
+                lastLoginAt: true,
             },
         });
 

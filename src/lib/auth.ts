@@ -77,8 +77,12 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async signIn({ user, account }) {
-            // Credentials provider - already validated in authorize()
+            // Credentials provider - update lastLoginAt
             if (account?.provider === 'credentials') {
+                await prisma.member.update({
+                    where: { id: user.id },
+                    data: { lastLoginAt: new Date() },
+                });
                 return true;
             }
 
@@ -127,15 +131,16 @@ export const authOptions: NextAuthOptions = {
                             googleSub: account.providerAccountId,
                             avatarUrl: user.image || member.avatarUrl,
                             avatarData: avatarData || member.avatarData,
+                            lastLoginAt: new Date(),
                         },
                     });
-                } else if (avatarData) {
-                    // Update avatar on every login if we got a new one
+                } else {
+                    // Update lastLoginAt on every login, and avatar if we got a new one
                     await prisma.member.update({
                         where: { id: member.id },
                         data: {
-                            avatarUrl: user.image,
-                            avatarData: avatarData
+                            ...(avatarData && { avatarUrl: user.image, avatarData }),
+                            lastLoginAt: new Date(),
                         },
                     });
                 }

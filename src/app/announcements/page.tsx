@@ -16,6 +16,10 @@ interface Announcement {
     createdAt: string;
 }
 
+function stripHtml(html: string): string {
+    return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+}
+
 export default function AnnouncementsPage() {
     const { data: session, status } = useSession();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -102,7 +106,7 @@ export default function AnnouncementsPage() {
                                         WebkitLineClamp: 2,
                                         WebkitBoxOrient: 'vertical',
                                     }}>
-                                        {ann.body}
+                                        {stripHtml(ann.body)}
                                     </p>
                                 </div>
                                 <span className="list-item-arrow">→</span>

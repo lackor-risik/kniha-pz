@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, handleApiError, notFound, canAccessResource, forbidden, isAdmin, badRequest } from '@/lib/rbac';
 import { validateRequest, catchUpdateSchema } from '@/lib/validation';
+import { deleteFile } from '@/lib/storage';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -197,6 +198,16 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
         // Non-admin cannot delete catches in closed visits
         if (!isAdmin(user) && catchRecord.visit.endDate !== null) {
             return forbidden('Úlovky v ukončenej návšteve nie je možné mazať');
+        }
+
+        // Get photos and delete files
+        const photos = await prisma.catchPhoto.findMany({
+            where: { catchId: id },
+            select: { storageKey: true },
+        });
+
+        for (const photo of photos) {
+            await deleteFile(photo.storageKey);
         }
 
         await prisma.catch.delete({ where: { id } });

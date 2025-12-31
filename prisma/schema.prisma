@@ -28,6 +28,7 @@ model Member {
   displayName String   @map("display_name")
   avatarUrl   String?  @map("avatar_url")
   avatarData  String?  @map("avatar_data") // Base64 cached avatar image
+  lastLoginAt DateTime? @map("last_login_at")
   role        Role     @default(MEMBER)
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")

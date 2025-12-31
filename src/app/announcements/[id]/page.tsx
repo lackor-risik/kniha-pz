@@ -119,13 +119,10 @@ export default function AnnouncementDetailPage() {
             <div className="page-content">
                 <div className="card">
                     <div className="card-body">
-                        <div style={{
-                            whiteSpace: 'pre-wrap',
-                            lineHeight: 1.6,
-                            fontSize: 'var(--font-size-base)',
-                        }}>
-                            {announcement.body}
-                        </div>
+                        <div
+                            className="announcement-body"
+                            dangerouslySetInnerHTML={{ __html: announcement.body }}
+                        />
                     </div>
                 </div>
 

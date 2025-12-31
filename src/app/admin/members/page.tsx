@@ -16,6 +16,7 @@ interface Member {
     googleSub: string | null;
     avatarUrl: string | null;
     avatarData: string | null;
+    lastLoginAt: string | null;
 }
 
 export default function AdminMembersPage() {
@@ -221,7 +222,10 @@ export default function AdminMembersPage() {
                                         {member.role === 'ADMIN' ? 'Admin' : 'Člen'}
                                     </span>
                                     {!member.isActive && <span className="badge badge-error">Neaktívny</span>}
-                                    {!member.googleSub && <span className="badge badge-info">Neprihlásil sa</span>}
+                                    {member.lastLoginAt
+                                        ? <span className="badge badge-gray">{new Date(member.lastLoginAt).toLocaleDateString('sk-SK')}</span>
+                                        : <span className="badge badge-info">Neprihlásil sa</span>
+                                    }
                                 </div>
                             </div>
                             <span className="list-item-arrow">→</span>

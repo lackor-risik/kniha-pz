@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unlink } from 'fs/promises';
+import { existsSync } from 'fs';
+import path from 'path';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, handleApiError, notFound, canAccessResource, forbidden, isAdmin } from '@/lib/rbac';
 import { validateRequest, announcementUpdateSchema } from '@/lib/validation';
@@ -107,10 +110,29 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
             return forbidden('Nemáte oprávnenie mazať cudzí oznam');
         }
 
-        // Soft delete
-        await prisma.announcement.update({
+        // Extract image URLs from body and delete local uploads
+        const imageRegex = /src="\/api\/uploads\/([^"]+)"/g;
+        const matches = [...announcement.body.matchAll(imageRegex)];
+        const uploadDir = path.join(process.cwd(), 'data', 'uploads');
+
+        for (const match of matches) {
+            const filename = match[1];
+            // Security: only allow valid filenames
+            if (/^[\w\-\.]+$/.test(filename)) {
+                const filepath = path.join(uploadDir, filename);
+                if (existsSync(filepath)) {
+                    try {
+                        await unlink(filepath);
+                    } catch (err) {
+                        console.error('Failed to delete image:', filepath, err);
+                    }
+                }
+            }
+        }
+
+        // Hard delete
+        await prisma.announcement.delete({
             where: { id },
-            data: { deletedAt: new Date() },
         });
 
         return NextResponse.json({ success: true });

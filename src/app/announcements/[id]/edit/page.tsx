@@ -4,7 +4,13 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { BottomNav } from '@/components/BottomNav';
+
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor').then(mod => mod.RichTextEditor), {
+    ssr: false,
+    loading: () => <div className="form-textarea" style={{ minHeight: '150px', background: 'var(--color-gray-50)' }} />
+});
 
 interface Announcement {
     id: string;
@@ -151,13 +157,10 @@ export default function EditAnnouncementPage() {
 
                             <div className="form-group">
                                 <label className="form-label form-label-required">Text oznamu</label>
-                                <textarea
-                                    className="form-textarea"
+                                <RichTextEditor
+                                    content={formData.body}
+                                    onChange={(content) => setFormData({ ...formData, body: content })}
                                     placeholder="Napíšte text oznamu..."
-                                    value={formData.body}
-                                    onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-                                    required
-                                    rows={8}
                                 />
                             </div>
 

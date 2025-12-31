@@ -24,6 +24,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
                 forcePasswordChange: true,
                 createdAt: true,
                 updatedAt: true,
+                lastLoginAt: true,
                 _count: {
                     select: {
                         visits: true,
