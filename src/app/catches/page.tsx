@@ -170,7 +170,18 @@ export default function CatchesListPage() {
                             color: 'var(--color-gray-600)',
                             fontSize: 'var(--font-size-sm)'
                         }}>
-                            Celkom: {catches.length} úlovkov v {groupedCatches.length} druhoch
+                            Celkom: {catches.length} {(() => {
+                                const count = catches.length;
+                                if (count === 0) return 'úlovkov';
+                                if (count === 1) return 'úlovok';
+                                if (count >= 2 && count <= 4) return 'úlovky';
+                                return 'úlovkov';
+                            })()} v {groupedCatches.length} {(() => {
+                                const count = groupedCatches.length;
+                                if (count === 0) return 'druhoch';
+                                if (count === 1) return 'druhu';
+                                return 'druhoch';
+                            })()}
                         </div>
 
                         {groupedCatches.map((group) => (
