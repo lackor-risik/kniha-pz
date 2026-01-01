@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/BottomNav';
+import { getSpeciesEmoji } from '@/lib/speciesEmoji';
 
 interface Catch {
     id: string;
@@ -194,7 +195,7 @@ export default function CatchesListPage() {
                                     alignItems: 'center',
                                     gap: 'var(--spacing-2)'
                                 }}>
-                                    <span>🦌</span>
+                                    <span>{getSpeciesEmoji(group.speciesName)}</span>
                                     {group.speciesName}
                                     <span className="badge badge-gray" style={{ fontWeight: 400 }}>
                                         {group.catches.length}

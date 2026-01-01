@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 import { BottomNav } from '@/components/BottomNav';
+import { getSpeciesEmoji } from '@/lib/speciesEmoji';
 
 interface Species {
     id: string;
@@ -170,7 +171,7 @@ export default function AdminSpeciesPage() {
                 <div className="card">
                     {species.map((s) => (
                         <Link key={s.id} href={`/admin/species/${s.id}`} className="list-item">
-                            <span style={{ fontSize: '24px' }}>🦌</span>
+                            <span style={{ fontSize: '24px' }}>{getSpeciesEmoji(s.name)}</span>
                             <div className="list-item-content">
                                 <div className="list-item-title">{s.name}</div>
                                 <div className="list-item-meta">
