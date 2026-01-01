@@ -97,7 +97,18 @@ export default function NewCatchPage() {
             setVisit(visitData);
             setSpecies(speciesData);
             setLocalities(localitiesData);
-            setFormData((prev) => ({ ...prev, huntingLocalityId: visitData.locality.id }));
+
+            // Set default values based on visit data
+            const updates: Partial<typeof formData> = {
+                huntingLocalityId: visitData.locality.id
+            };
+
+            // If visit is not active (ended), set default time to visit start
+            if (!visitData.isOpen) {
+                updates.huntedAt = formatDateTime(new Date(visitData.startDate));
+            }
+
+            setFormData((prev) => ({ ...prev, ...updates }));
         } catch (error) {
             console.error('Failed to load data:', error);
         } finally {
