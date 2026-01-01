@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, handleApiError, notFound, canAccessResource, forbidden, isAdmin, badRequest } from '@/lib/rbac';
 import { validateRequest, catchUpdateSchema } from '@/lib/validation';
-import { deleteFile } from '@/lib/storage';
+import { deleteFile, getThumbnailKey } from '@/lib/storage';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -208,6 +208,8 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
 
         for (const photo of photos) {
             await deleteFile(photo.storageKey);
+            // Also delete thumbnail
+            await deleteFile(getThumbnailKey(photo.storageKey));
         }
 
         await prisma.catch.delete({ where: { id } });

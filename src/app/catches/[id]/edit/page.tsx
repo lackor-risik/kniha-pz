@@ -52,8 +52,6 @@ export default function EditCatchPage() {
     const [localities, setLocalities] = useState<Locality[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [deleting, setDeleting] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [error, setError] = useState('');
 
     const [formData, setFormData] = useState({
@@ -165,27 +163,6 @@ export default function EditCatchPage() {
             setError('Chyba pripojenia k serveru');
         } finally {
             setSubmitting(false);
-        }
-    }
-
-    async function handleDelete() {
-        setDeleting(true);
-        try {
-            const res = await fetch(`/api/catches/${catchId}`, {
-                method: 'DELETE',
-            });
-
-            if (res.ok) {
-                router.push(`/visits/${catchData?.visit.id}`);
-            } else {
-                const data = await res.json();
-                setError(data.error || 'Chyba pri mazaní');
-            }
-        } catch {
-            setError('Chyba pripojenia k serveru');
-        } finally {
-            setDeleting(false);
-            setShowDeleteModal(false);
         }
     }
 
@@ -366,43 +343,7 @@ export default function EditCatchPage() {
                         {submitting ? <span className="spinner"></span> : 'Uložiť zmeny'}
                     </button>
                 </form>
-
-                <button
-                    className="btn btn-danger btn-full"
-                    style={{ marginTop: 'var(--spacing-4)' }}
-                    onClick={() => setShowDeleteModal(true)}
-                >
-                    🗑️ Zmazať úlovok
-                </button>
             </div>
-
-            {/* Delete Confirmation Modal */}
-            {showDeleteModal && (
-                <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="modal-title">Zmazať úlovok?</h3>
-                        <p className="modal-message">
-                            Naozaj chcete zmazať tento úlovok? Táto akcia sa nedá vrátiť späť.
-                        </p>
-                        <div className="modal-actions">
-                            <button
-                                className="btn btn-ghost"
-                                onClick={() => setShowDeleteModal(false)}
-                                disabled={deleting}
-                            >
-                                Zrušiť
-                            </button>
-                            <button
-                                className="btn btn-danger"
-                                onClick={handleDelete}
-                                disabled={deleting}
-                            >
-                                {deleting ? <span className="spinner"></span> : 'Zmazať'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             <BottomNav />
         </div>

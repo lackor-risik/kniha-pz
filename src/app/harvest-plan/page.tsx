@@ -136,7 +136,7 @@ export default function HarvestPlanPage() {
                     <>
                         {/* Harvest Plan Table */}
                         <div className="card">
-                            <div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                            <div className="table-responsive">
                                 <table className="table">
                                     <thead>
                                         <tr>

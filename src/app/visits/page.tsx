@@ -22,6 +22,10 @@ function VisitsContent() {
     const searchParams = useSearchParams();
     const [visits, setVisits] = useState<Visit[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const LIMIT = 50;
 
     // Get initial filter from URL param or default to 'all'
     const tabParam = searchParams.get('tab');
@@ -36,25 +40,55 @@ function VisitsContent() {
 
     useEffect(() => {
         if (session?.user) {
-            loadVisits();
+            // Reset when filter changes
+            setVisits([]);
+            setPage(1);
+            setHasMore(true);
+            loadVisits(1, true);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session, filter]);
 
-    async function loadVisits() {
+    async function loadVisits(pageNum: number, reset = false) {
         try {
-            const params = new URLSearchParams({ limit: '50' });
+            if (reset) {
+                setLoading(true);
+            } else {
+                setLoadingMore(true);
+            }
+
+            const params = new URLSearchParams({
+                limit: String(LIMIT),
+                page: String(pageNum)
+            });
             if (filter === 'active') params.set('active', 'true');
             if (filter === 'mine' && session?.user?.id) params.set('memberId', session.user.id);
 
             const res = await fetch(`/api/visits?${params}`);
             const data = await res.json();
-            setVisits(data.data || []);
+            const newVisits = data.data || [];
+
+            if (reset) {
+                setVisits(newVisits);
+            } else {
+                setVisits(prev => [...prev, ...newVisits]);
+            }
+
+            // Check if there are more pages
+            const totalPages = data.pagination?.totalPages || 1;
+            setHasMore(pageNum < totalPages);
         } catch (error) {
             console.error('Failed to load visits:', error);
         } finally {
             setLoading(false);
+            setLoadingMore(false);
         }
+    }
+
+    function loadMore() {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        loadVisits(nextPage, false);
     }
 
     if (status === 'loading') {
@@ -150,6 +184,18 @@ function VisitsContent() {
                             </Link>
                         ))}
                     </div>
+                )}
+
+                {/* Load More Button */}
+                {!loading && visits.length > 0 && hasMore && (
+                    <button
+                        className="btn btn-secondary btn-full"
+                        style={{ marginTop: 'var(--spacing-4)' }}
+                        onClick={loadMore}
+                        disabled={loadingMore}
+                    >
+                        {loadingMore ? <span className="spinner"></span> : 'Načítať viac'}
+                    </button>
                 )}
             </div>
 

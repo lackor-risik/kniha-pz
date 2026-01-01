@@ -1,0 +1,275 @@
+{
+  "localities": [
+    {
+      "id": "cda8c4d9-7e04-463a-a419-d9f8455cd5a1",
+      "name": "Tajlungy"
+    },
+    {
+      "id": "fc413fa1-98d3-401b-b4da-8eaa4610a482",
+      "name": "Ulehlovka"
+    },
+    {
+      "id": "a1b99a7f-d8a3-4e9a-93f2-bc1f0ee9d539",
+      "name": "Zadný Cvinget"
+    },
+    {
+      "id": "fc381966-96cf-4c61-8842-7376d44c0bc6",
+      "name": "Tmavá"
+    },
+    {
+      "id": "cc236de3-f065-40cb-86cc-4a5ab567e4da",
+      "name": "Tischl"
+    },
+    {
+      "id": "52302366-6d69-4aeb-a4e4-0e4f4455b73d",
+      "name": "Vlčia jama"
+    },
+    {
+      "id": "1c345796-4b6a-47f6-a2cf-731b661d7d12",
+      "name": "Majer"
+    },
+    {
+      "id": "0f8cc317-902a-4db1-8163-f08318e6edb8",
+      "name": "Blaufúska"
+    },
+    {
+      "id": "6b73a784-40fc-4c10-9da8-948d2999bae5",
+      "name": "Vlčí vrch"
+    },
+    {
+      "id": "5caf436e-ea6c-48e2-9807-e2233d87e8f9",
+      "name": "Predná"
+    },
+    {
+      "id": "19f164a5-a28e-4814-8310-e27295dd5bc8",
+      "name": "Hochkolung"
+    },
+    {
+      "id": "c2257f2d-f8c6-4c47-ba2d-4b39d1d8f544",
+      "name": "Dirháb"
+    },
+    {
+      "id": "acf67fab-9f18-498c-866b-e4794c8ecee2",
+      "name": "Rottfarba"
+    },
+    {
+      "id": "de2ae0a1-3f74-40d7-b9e4-45e9974a0660",
+      "name": "Jánska"
+    },
+    {
+      "id": "02ab6a00-cf75-40ee-a4fc-6078efdceb71",
+      "name": "Kováčová"
+    },
+    {
+      "id": "b0e5494f-2db6-4984-aa4a-bab3fa702638",
+      "name": "Hintergrund"
+    },
+    {
+      "id": "ca8c2f04-304f-4393-8547-bca64585f0dc",
+      "name": "Predný Cvinget"
+    },
+    {
+      "id": "a27c689d-12a3-4b15-a285-996ea260430a",
+      "name": "Podskalie"
+    },
+    {
+      "id": "20d26725-6f10-44ea-a23f-5c5138f16411",
+      "name": "Kaltrin"
+    }
+  ],
+  "species": [
+    {
+      "id": "39ffb7f8-21d5-4991-8b4d-4ce63c57c431",
+      "name": "Jazvec lesný"
+    },
+    {
+      "id": "29a06a90-7f9d-4a26-add4-f24d985c3c9d",
+      "name": "Jeleň II.VT"
+    },
+    {
+      "id": "cca0c07e-ccb2-48ff-a10f-2c260e9059d3",
+      "name": "Jeleň III.VT"
+    },
+    {
+      "id": "bb41c835-a65f-44b6-8bdf-521737af0550",
+      "name": "Srnec I.VT"
+    },
+    {
+      "id": "40cfe323-8cf7-47e6-beef-4b3fc3f3e7de",
+      "name": "Jelienča"
+    },
+    {
+      "id": "569694ea-9c23-49b5-9177-f460b03b62d1",
+      "name": "Jelenica"
+    },
+    {
+      "id": "132fbd3b-6d42-41ee-9b7a-5f9caf3e2f6c",
+      "name": "Diviak"
+    },
+    {
+      "id": "348cf1b5-2435-45e8-af5d-56883bb13345",
+      "name": "Vlk dravý"
+    },
+    {
+      "id": "133ab654-2291-4502-a942-a8ed48de0069",
+      "name": "Diviača"
+    },
+    {
+      "id": "6f0ca7b4-9db6-4ba7-bc13-39743e6214ac",
+      "name": "Srnec II.VT"
+    },
+    {
+      "id": "22849103-f64a-4461-950d-4650c2b1f86f",
+      "name": "Srnec III.VT"
+    },
+    {
+      "id": "c617d4eb-9064-4da9-b275-6291bfbd3abb",
+      "name": "Jeleň IV.VT"
+    },
+    {
+      "id": "20dd1313-72a4-41b5-adbe-513d4a071fef",
+      "name": "Líška hrdzavá"
+    },
+    {
+      "id": "be9bebb4-334a-4f52-9815-210f2b67348e",
+      "name": "Srna"
+    },
+    {
+      "id": "cc68356f-b5c7-46ec-95af-c927afa8111c",
+      "name": "Srnča"
+    },
+    {
+      "id": "5881ffed-970a-4c13-92d2-107ecc9aa528",
+      "name": "Psík medviedikovitý"
+    },
+    {
+      "id": "be115ffe-2a39-4d3a-929c-1ae118f33aec",
+      "name": "Medveď hnedý"
+    },
+    {
+      "id": "25c0955a-ddfa-437f-aa8c-a14ecdc0a4fd",
+      "name": "Jeleň I.VT"
+    },
+    {
+      "id": "d2ce7c0b-36f6-4158-8052-6d62627625d0",
+      "name": "Lanštiak"
+    }
+  ],
+  "members": [
+    {
+      "id": "af76842b-cf0a-482a-89f2-e2f0de8d1f83",
+      "displayName": "Edo Košický",
+      "email": "edo.kosicky@gmail.com"
+    },
+    {
+      "id": "be99eeaf-7d6c-4b16-8e6b-9e6817bf7846",
+      "displayName": "Rusnák Maroš",
+      "email": "rusnak.marian77@gmail.com"
+    },
+    {
+      "id": "67de2429-e95c-46e4-9bb9-332efad3a2b6",
+      "displayName": "Boris Hurbanič",
+      "email": "boris.hurbanic@gmail.com"
+    },
+    {
+      "id": "26435155-5fbe-4433-b8d8-3d8ccbf4ac9b",
+      "displayName": "Riso Tester",
+      "email": "lacko@risoft.sk"
+    },
+    {
+      "id": "aa1343c8-a937-49d2-9225-2bf5444b0d49",
+      "displayName": "Lacko Rišo",
+      "email": "lackor@gmail.com"
+    },
+    {
+      "id": "6fcf9934-e040-4a2c-ac72-454a3b28a595",
+      "displayName": "Gombarček Julo",
+      "email": "gombarcek.julo@pzskalka.local"
+    },
+    {
+      "id": "337289f3-1671-42b7-8133-41636bdd0464",
+      "displayName": "Honko Slávo",
+      "email": "honko.slavo@pzskalka.local"
+    },
+    {
+      "id": "ccc291d2-2414-4463-bdf2-8630cf25aef7",
+      "displayName": "Lacko Tibor ml.",
+      "email": "lacko.ml.@pzskalka.local"
+    },
+    {
+      "id": "4db252a0-d88a-471d-8897-9cf04f43d0fd",
+      "displayName": "Lacko Tibor st.",
+      "email": "lacko.st.@pzskalka.local"
+    },
+    {
+      "id": "d833a77c-5f16-44b2-aa35-01f1dae552e7",
+      "displayName": "Litva Lukáš",
+      "email": "litva.lukas@pzskalka.local"
+    },
+    {
+      "id": "47e8751a-3fd7-4086-94a5-e4d39fa8bca0",
+      "displayName": "Litva Peter",
+      "email": "litva.peter@pzskalka.local"
+    },
+    {
+      "id": "bb7fbe9f-39ff-4450-9974-ebdfc125d593",
+      "displayName": "Mesík Miro",
+      "email": "mesik.miro@pzskalka.local"
+    },
+    {
+      "id": "667c9be6-eef3-4297-b930-71b305d265f9",
+      "displayName": "Mesík Peter",
+      "email": "mesik.peter@pzskalka.local"
+    },
+    {
+      "id": "bf5f729f-f2df-4443-9130-3cbc959fc68d",
+      "displayName": "Mlynka Tibor",
+      "email": "mlynka.tibor@pzskalka.local"
+    },
+    {
+      "id": "db7a2413-1047-4711-8aff-59c018589900",
+      "displayName": "Mucha Milan",
+      "email": "mucha.milan@pzskalka.local"
+    },
+    {
+      "id": "8c231d89-4f2f-466a-a2c4-c7ef922dd460",
+      "displayName": "Pittner Ľubo",
+      "email": "pittner.lubo@pzskalka.local"
+    },
+    {
+      "id": "d1123170-6199-42fa-9099-8ec95d8b2997",
+      "displayName": "Poláček Ľubo",
+      "email": "polacek.lubo@pzskalka.local"
+    },
+    {
+      "id": "ccd39570-49bf-412d-ab2e-81870bf84768",
+      "displayName": "Poláček Vlado",
+      "email": "polacek.vlado@pzskalka.local"
+    },
+    {
+      "id": "ab66bc89-0c36-4953-af54-3f298a14a47c",
+      "displayName": "Rozenberg Milan",
+      "email": "rozenberg.milan@pzskalka.local"
+    },
+    {
+      "id": "5b5a6ee9-7afc-46a4-b886-23f65d94de16",
+      "displayName": "Rusnák Jano",
+      "email": "rusnak.jano@pzskalka.local"
+    },
+    {
+      "id": "76b40819-792a-4a53-a563-84e7ba2834ff",
+      "displayName": "Schnierer Miro",
+      "email": "schnierer.miro@pzskalka.local"
+    },
+    {
+      "id": "79b757fb-0da6-4f0b-9292-1cc30de52612",
+      "displayName": "Sokol Miro",
+      "email": "sokol.miro@pzskalka.local"
+    },
+    {
+      "id": "4a5e87a3-5fb3-4831-9505-4d6d3cedaa1b",
+      "displayName": "Šípka Dominik",
+      "email": "sipka.dominik@pzskalka.local"
+    }
+  ]
+}

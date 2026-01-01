@@ -49,6 +49,8 @@ export default function CatchDetailPage() {
     const [error, setError] = useState('');
     const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
     const [deletePhotoId, setDeletePhotoId] = useState<string | null>(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleBack = () => {
@@ -144,6 +146,27 @@ export default function CatchDetailPage() {
         }
     }
 
+    async function handleDelete() {
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/catches/${catchId}`, {
+                method: 'DELETE',
+            });
+
+            if (res.ok) {
+                router.push(`/visits/${catchData?.visit.id}`);
+            } else {
+                const data = await res.json();
+                setError(data.error || 'Chyba pri mazaní');
+            }
+        } catch {
+            setError('Chyba pripojenia k serveru');
+        } finally {
+            setDeleting(false);
+            setShowDeleteModal(false);
+        }
+    }
+
     const sexLabels: Record<string, string> = {
         MALE: 'Samec',
         FEMALE: 'Samica',
@@ -178,9 +201,17 @@ export default function CatchDetailPage() {
                         <p className="page-subtitle">{catchData.visit.member.displayName}</p>
                     </div>
                     {canEdit && (
-                        <Link href={`/catches/${catchId}/edit`} className="btn btn-primary btn-sm">
-                            ✏️ Upraviť
-                        </Link>
+                        <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
+                            <Link href={`/catches/${catchId}/edit`} className="btn btn-primary btn-sm">
+                                ✏️ Upraviť
+                            </Link>
+                            <button
+                                className="btn btn-danger btn-sm"
+                                onClick={() => setShowDeleteModal(true)}
+                            >
+                                🗑️ Zmazať
+                            </button>
+                        </div>
                     )}
                 </div>
             </header>
@@ -312,6 +343,17 @@ export default function CatchDetailPage() {
                 cancelText="Zrušiť"
                 onConfirm={confirmPhotoDelete}
                 onCancel={() => setDeletePhotoId(null)}
+            />
+
+            {/* Delete Catch Confirm Modal */}
+            <ConfirmModal
+                isOpen={showDeleteModal}
+                title="Zmazať úlovok?"
+                message="Naozaj chcete zmazať tento úlovok? Táto akcia sa nedá vrátiť späť."
+                confirmText={deleting ? 'Mažem...' : 'Zmazať'}
+                cancelText="Zrušiť"
+                onConfirm={handleDelete}
+                onCancel={() => setShowDeleteModal(false)}
             />
 
             <BottomNav />

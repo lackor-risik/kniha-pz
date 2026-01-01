@@ -1,0 +1,92 @@
+Sheet names: ["Navstevy","Chata","Lokality","Oznamy","Clenovia","Plnenie planu","Plnenie planu 2324","Plan lovu","DeviceIDs","Plnenie planu 2425"]
+
+=== Sheet: Navstevy ===
+First 5 rows:
+Row 0: ["Key","Meno","Host","Cas prichodu","Cas odchodu","Lokalita","Ulovok","Cas lovu","Miesto lovu","Cislo znacky","Poznamky","LatLong","DeviceID"]
+Row 1: ["27a35375","Schnierer Miro",false,45066.76388888889,45066.84166666667,"Blaufúska",null,null,null,null,null,"48.756206, 18.931698","194c53a3-22b9-4d07-9c59-0c19d955c40d"]
+Row 2: ["8bf5af5d","Pittner Ľubo",false,45067.73541666667,45068.618055555555,"Dirháb",null,null,null,null,null,"48.757338, 18.918435","e5cca165-0047-4a57-a0bc-01c7532d74fc"]
+Row 3: ["59e9bad7","Mucha Milan",false,45068.708333333336,45068.85277777778,"Zadný Cvinget",null,null,null,null,null,"48.758234, 18.922498","d7865262-1bab-4c82-b4fc-adf1aa46fc3e"]
+Row 4: ["9db05f3f","Litva Peter",false,45068.70972222222,45068.85138888889,"Predná",null,null,null,null,null,"48.758234, 18.922498","d7865262-1bab-4c82-b4fc-adf1aa46fc3e"]
+Total rows: 2412
+
+=== Sheet: Chata ===
+First 5 rows:
+Row 0: ["ID","Meno","Od","Do","Poznamka"]
+Row 1: ["8d921f2a","Šípka Dominik",45093.74652777778,45095.74652777778,"Chata"]
+Row 2: ["4a63a1a3","Pittner Ľubo",45100.74722222222,45104.74722222222,"Chata"]
+Row 3: ["1658f275","Rusnák Maroš",45114.541666666664,45116.645833333336]
+Row 4: ["d27943ea","Poláček Vlado",45103.57361111111,45105.532638888886]
+Total rows: 973
+
+=== Sheet: Lokality ===
+First 5 rows:
+Row 0: ["Lokalita","Obsadena"]
+Row 1: ["Blaufúska",true]
+Row 2: ["Dirháb",false]
+Row 3: ["Hintergrund",false]
+Row 4: ["Hochkolung",false]
+Total rows: 1000
+
+=== Sheet: Oznamy ===
+First 5 rows:
+Row 0: ["ID","Datum","Oznam"]
+Row 1: ["70acd4ce",45070,"26.5. o 15.oo brigáda na Žerucha.Náradie: hrable a sekery."]
+Row 2: ["04aca042",45141,"Dňa 19.augusta o 13 hod. sa uskutoční členská schôdza na chate Žerucha. Po schôdzi bude posedenie pri guláši s rodinami."]
+Row 3: ["7f2f5b4b",45182,"Na Kováčovej nie je vyčistený chodník k posedu!!!"]
+Row 4: ["910254ce",45280,"Vážení členovia PZ Skalka,\n\ndovoľte mi informovať Vás, že dnes, na základe uznesenia Rady TRgO SPZ Martin zo dňa 9.5.2023  poukazujem 160 EUR na účet číslo: SK84 0900 0000 0052 0529 1158 zriadený na tento účel, za tých členov PZ Skalka Turček, ktorí sú zároveň členmi TRgO.\n\nZ predmetného schváleného uznesenia citujem nasledovné:\n\n2.) SCHVAĽUJE:\nNávrh rozpočtu na rok 2023, vrátane navýšenie o účelový príspevok vo výške 10 EUR na každého člena TRgO.\n\nZ citovaného je zrejmé, že uznesenie hovorí o členovi TRgO a nie členovi PZ, tak ako uvádza okresná tajomníčka p. Badová. Vzhľadom na skutočnosť, že z 18 riadnych členov PZ Skalka Turček, len 16 členov sú zároveň členmi TRgO, poukazujem 16x10EUR.\n\nVýbor PZ Skalka Turček si je vedomý, že na poslednej členskej schôdzi členovia PZ vyjadrili nesúhlas s predmetným bodom uznesenia Rady TRgO, avšak zároveň má za to, že podľa stanov SPZ § 27 odstavec 2, bod c) je v kompetencii Rady TRgO \"rozhodovať o výške zápisného, členského príspevku, prípadne o výške a použití účelových príspevkov; výška týchto poplatkov musí byť pre všetkých členov OkO – RgO SPZ rovnaká\".\n\nS pozdravom\n\nRichard Lacko\nfinančný hospodár"]
+Total rows: 991
+
+=== Sheet: Clenovia ===
+First 5 rows:
+Row 0: ["Meno","Vonku"]
+Row 1: ["Gombarček Julo",false]
+Row 2: ["Honko Slávo",false]
+Row 3: ["Lacko Rišo",false]
+Row 4: ["Lacko Tibor ml.",false]
+Total rows: 1002
+
+=== Sheet: Plnenie planu ===
+First 5 rows:
+Row 0: ["ID","Zver","Meno","Cas lovu","Lokalita","Pohlavie","Vek","Vaha","Cislo znacky","Poznamka"]
+Row 1: ["cd01c9f8","Srnec II.VT","Pittner Ľubo",45799.805555555555,"Tajlungy","samčie",4,15,"Gc50992084"]
+Row 2: ["f5679d37","Srnec I.VT","Mesík Miro",45809.756944444445,"Majer","samčie",1,10,"Gc50992083"]
+Row 3: ["9840a616","Diviača","Mesík Miro",45820.895833333336,"Tajlungy","samčie",1,23,"Gc50992086"]
+Row 4: ["9075b7b5","Jelenica","Mesík Miro",45871.88888888889,"Kováčová","samičie",2,50,"Gc50992087"]
+Total rows: 43
+
+=== Sheet: Plnenie planu 2324 ===
+First 5 rows:
+Row 0: ["ID","Zver","Meno","Cas lovu","Lokalita","Pohlavie","Vek","Vaha","Cislo znacky","Poznamka"]
+Row 1: ["3b04312e","Srnec II.VT","Pittner Ľubo",45081.84375,"Podskalie","samčie",5,14,"Fn 509 53761"]
+Row 2: ["da49e4fd","Srnec II.VT","Poláček Ľubo",45102.819444444445,"Dirháb","samčie",4,13,"Fi 509 67073","Podiely PZ"]
+Row 3: ["3ac2158a","Srnec I.VT","Mesík Peter",45112.291666666664,"Kováčová","samčie",1,13,"Fi 509 67077","Podiely PZ"]
+Row 4: ["2623460e","Srnec I.VT","Mesík Miro",45145.63611111111,"Podskalie","samčie",1,16,"Fn 509 53765"]
+Total rows: 39
+
+=== Sheet: Plan lovu ===
+First 5 rows:
+Row 0: ["Zver","Plan","Lov","Ulovit"]
+Row 1: ["Srnec I.VT",2,2,0]
+Row 2: ["Srnec II.VT",2,2,0]
+Row 3: ["Srnec III.VT",1,1,0]
+Row 4: ["Srna",1,1,0]
+Total rows: 16
+
+=== Sheet: DeviceIDs ===
+First 5 rows:
+Row 0: ["DeviceID","Meno"]
+Row 1: ["290116a5-0e77-4a1c-83e8-9931c3394c56","Gombarček Julo"]
+Row 2: ["d817f22f-d045-4af3-aace-e72b8c62db7c","Honko Slávo"]
+Row 3: ["b2dd3588-7fd3-4cbe-8d68-e9fc54796ac7","Poláček Ľubo"]
+Row 4: ["42376b0a-a046-44b7-8c4c-ded8d653ff85","Pittner Ľubo"]
+Total rows: 62
+
+=== Sheet: Plnenie planu 2425 ===
+First 5 rows:
+Row 0: ["ID","Zver","Meno","Cas lovu","Lokalita","Pohlavie","Vek","Vaha","Cislo znacky","Poznamka"]
+Row 1: ["ddb50ee2","Srnec II.VT","Mucha Milan",45438.854166666664,"Vlčí vrch","samčie",3,13,"Ga50935016"]
+Row 2: ["102eacff","Srnec II.VT","Pittner Ľubo",45453.802083333336,"Majer","samčie",4,16,"Ga50935017","Podiel"]
+Row 3: ["1e7e6ad3","Diviača","Pittner Ľubo",45510.819444444445,"Kováčová","samčie",1,16,"Ga509 35018"]
+Row 4: ["127c4d6e","Jelenica","Mucha Milan",45550.645833333336,"Predná","samičie",6,100,"Oh 509 13749"]
+Total rows: 45
+

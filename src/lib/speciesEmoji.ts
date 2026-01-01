@@ -18,6 +18,8 @@ const speciesEmojiMap: Record<string, string> = {
     'srnec': '🦌',
     'srna': '🦌',
     'srnča': '🦌',
+    'lanštiak': '🐗',
+    'lanstiak': '🐗',
     'los': '🦌',
 
     // Diviačia zver
