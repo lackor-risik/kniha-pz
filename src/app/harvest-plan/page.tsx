@@ -134,28 +134,9 @@ export default function HarvestPlanPage() {
                     </div>
                 ) : (
                     <>
-                        {/* Season Info */}
-                        <div className="card" style={{ marginBottom: 'var(--spacing-4)' }}>
-                            <div className="card-body" style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}>
-                                <div>
-                                    <p style={{ fontWeight: 600, fontSize: 'var(--font-size-lg)' }}>{data.season.name}</p>
-                                    <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-500)' }}>
-                                        {new Date(data.season.dateFrom).toLocaleDateString('sk')} - {new Date(data.season.dateTo).toLocaleDateString('sk')}
-                                    </p>
-                                </div>
-                                {data.season.isActive && (
-                                    <span className="badge badge-success">Aktívna</span>
-                                )}
-                            </div>
-                        </div>
-
                         {/* Harvest Plan Table */}
                         <div className="card">
-                            <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            <div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                                 <table className="table">
                                     <thead>
                                         <tr>
@@ -184,35 +165,6 @@ export default function HarvestPlanPage() {
                                         ))}
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
-
-                        {/* Summary */}
-                        <div style={{
-                            marginTop: 'var(--spacing-4)',
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 1fr)',
-                            gap: 'var(--spacing-3)'
-                        }}>
-                            <div className="stat-card" style={{ textAlign: 'center' }}>
-                                <div className="stat-value">
-                                    {data.harvestPlan.reduce((sum, i) => sum + i.plannedCount, 0)}
-                                </div>
-                                <div className="stat-label">Plán celkom</div>
-                            </div>
-                            <div className="stat-card" style={{ textAlign: 'center' }}>
-                                <div className="stat-value">
-                                    {data.harvestPlan.reduce((sum, i) => sum + i.takenCount, 0)}
-                                </div>
-                                <div className="stat-label">Odlovené</div>
-                            </div>
-                            <div className="stat-card" style={{ textAlign: 'center' }}>
-                                <div className="stat-value" style={{
-                                    color: data.harvestPlan.some(i => i.exceeded) ? 'var(--color-error)' : 'var(--color-success)'
-                                }}>
-                                    {data.harvestPlan.reduce((sum, i) => sum + Math.max(0, i.remainingCount), 0)}
-                                </div>
-                                <div className="stat-label">Zostáva</div>
                             </div>
                         </div>
                     </>

@@ -25,8 +25,8 @@ function VisitsContent() {
 
     // Get initial filter from URL param or default to 'all'
     const tabParam = searchParams.get('tab');
-    const initialFilter = tabParam === 'active' ? 'active' : tabParam === 'closed' ? 'closed' : 'all';
-    const [filter, setFilter] = useState<'all' | 'active' | 'closed'>(initialFilter);
+    const initialFilter = tabParam === 'active' ? 'active' : tabParam === 'mine' ? 'mine' : 'all';
+    const [filter, setFilter] = useState<'all' | 'active' | 'mine'>(initialFilter);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -45,7 +45,7 @@ function VisitsContent() {
         try {
             const params = new URLSearchParams({ limit: '50' });
             if (filter === 'active') params.set('active', 'true');
-            if (filter === 'closed') params.set('active', 'false');
+            if (filter === 'mine' && session?.user?.id) params.set('memberId', session.user.id);
 
             const res = await fetch(`/api/visits?${params}`);
             const data = await res.json();
@@ -90,10 +90,10 @@ function VisitsContent() {
                         Aktívne
                     </button>
                     <button
-                        className={`tab ${filter === 'closed' ? 'active' : ''}`}
-                        onClick={() => setFilter('closed')}
+                        className={`tab ${filter === 'mine' ? 'active' : ''}`}
+                        onClick={() => setFilter('mine')}
                     >
-                        Ukončené
+                        Moje
                     </button>
                 </div>
 
@@ -115,23 +115,16 @@ function VisitsContent() {
                     <div className="card">
                         {visits.map((visit) => (
                             <Link key={visit.id} href={`/visits/${visit.id}`} className="list-item">
-                                <div style={{
-                                    width: '65px',
-                                    flexShrink: 0,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 'var(--spacing-1)',
-                                    alignItems: 'flex-start'
-                                }}>
-                                    {visit.isOpen && (
-                                        <span className="badge badge-visit-active">● Aktívna</span>
-                                    )}
-                                    {visit.catchCount > 0 && (
-                                        <span className="badge badge-visit-catch">🎯 {visit.catchCount}</span>
-                                    )}
-                                </div>
                                 <div className="list-item-content">
-                                    <div className="list-item-title">{visit.locality.name}</div>
+                                    <div className="list-item-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)', flexWrap: 'wrap' }}>
+                                        {visit.locality.name}
+                                        {visit.isOpen && (
+                                            <span className="badge badge-visit-active">● Aktívna</span>
+                                        )}
+                                        {visit.catchCount > 0 && (
+                                            <span className="badge badge-visit-catch">🎯 {visit.catchCount}</span>
+                                        )}
+                                    </div>
                                     <div className="list-item-subtitle">
                                         {visit.member.displayName} • {(() => {
                                             const start = new Date(visit.startDate);

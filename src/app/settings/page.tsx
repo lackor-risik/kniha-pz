@@ -92,6 +92,17 @@ export default function SettingsPage() {
                         <span className="list-item-arrow">→</span>
                     </Link>
 
+                    {session.user?.role === 'ADMIN' && (
+                        <Link href="/admin" className="list-item">
+                            <span style={{ fontSize: '24px' }}>⚙️</span>
+                            <div className="list-item-content">
+                                <div className="list-item-title">Administrácia</div>
+                                <div className="list-item-subtitle">Správa členov, lokalít, druhov a sezón</div>
+                            </div>
+                            <span className="list-item-arrow">→</span>
+                        </Link>
+                    )}
+
                     <button onClick={handleLogout} className="list-item" style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
                         <span style={{ fontSize: '24px' }}>🚪</span>
                         <div className="list-item-content">

@@ -21,7 +21,7 @@ interface DashboardStats {
         dateTo: string;
     } | null;
     totalCatches: number;
-    totalVisits: number;
+    activeVisitsCount: number;
     unreadAnnouncements: number;
 }
 
@@ -71,15 +71,15 @@ export default function DashboardPage() {
             const announcementsRes = await fetch('/api/announcements?limit=1');
             const announcementsData = await announcementsRes.json();
 
-            // Load recent visits count
-            const allVisitsRes = await fetch('/api/visits?limit=1');
-            const allVisitsData = await allVisitsRes.json();
+            // Load active visits count (all members)
+            const activeVisitsRes = await fetch('/api/visits?active=true&limit=1');
+            const activeVisitsData = await activeVisitsRes.json();
 
             setStats({
                 activeVisit,
                 activeSeason,
                 totalCatches: activeVisit?.catchCount || 0,
-                totalVisits: allVisitsData.pagination?.total || 0,
+                activeVisitsCount: activeVisitsData.pagination?.total || 0,
                 unreadAnnouncements: announcementsData.unreadCount || 0,
             });
         } catch (error) {
@@ -159,15 +159,6 @@ export default function DashboardPage() {
                         >
                             🚪 Odhlásiť
                         </button>
-                        {session.user.role === 'ADMIN' && (
-                            <Link
-                                href="/admin"
-                                className="badge badge-warning"
-                                style={{ fontSize: 'var(--font-size-xs)' }}
-                            >
-                                ⚙️ Admin
-                            </Link>
-                        )}
                     </div>
                 </div>
 
@@ -245,10 +236,20 @@ export default function DashboardPage() {
                     gap: 'var(--spacing-3)',
                     marginBottom: 'var(--spacing-4)',
                 }}>
-                    <div className="stat-card">
-                        <div className="stat-value">{stats?.totalVisits || 0}</div>
-                        <div className="stat-label">Celkom návštev</div>
-                    </div>
+                    <Link href="/visits?tab=active">
+                        <div className="stat-card" style={{ cursor: 'pointer' }}>
+                            <div className="stat-value">{stats?.activeVisitsCount || 0}</div>
+                            <div className="stat-label">
+                                {(() => {
+                                    const count = stats?.activeVisitsCount || 0;
+                                    if (count === 0) return 'nikto v revíri';
+                                    if (count === 1) return 'člen v revíri';
+                                    if (count >= 2 && count <= 4) return 'členovia v revíri';
+                                    return 'členov v revíri';
+                                })()}
+                            </div>
+                        </div>
+                    </Link>
                     {stats?.unreadAnnouncements && stats.unreadAnnouncements > 0 ? (
                         <Link href="/announcements">
                             <div className="stat-card" style={{ background: 'var(--color-error-light)' }}>
@@ -276,11 +277,11 @@ export default function DashboardPage() {
                     Rýchle akcie
                 </h2>
                 <div className="card">
-                    <Link href="/visits?tab=active" className="list-item">
+                    <Link href="/visits?tab=mine" className="list-item">
                         <span style={{ fontSize: '24px' }}>🗺️</span>
                         <div className="list-item-content">
-                            <div className="list-item-title">Aktívne návštevy</div>
-                            <div className="list-item-subtitle">Zobraziť práve prebiehajúce návštevy</div>
+                            <div className="list-item-title">Moje návštevy</div>
+                            <div className="list-item-subtitle">Zobraziť moje návštevy revíru</div>
                         </div>
                         <span className="list-item-arrow">→</span>
                     </Link>
