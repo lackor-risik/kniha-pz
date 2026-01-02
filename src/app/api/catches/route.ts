@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
 
         const { searchParams } = new URL(request.url);
         const seasonId = searchParams.get('seasonId');
+        const memberId = searchParams.get('memberId');
 
         if (!seasonId) {
             return NextResponse.json({ error: 'seasonId je povinný' }, { status: 400 });
@@ -23,14 +24,23 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Sezóna neexistuje' }, { status: 404 });
         }
 
+        // Build where clause
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const whereClause: any = {
+            huntedAt: {
+                gte: season.dateFrom,
+                lte: season.dateTo,
+            },
+        };
+
+        // Filter by member if provided
+        if (memberId) {
+            whereClause.visit = { memberId };
+        }
+
         // Get catches for the season date range
         const catches = await prisma.catch.findMany({
-            where: {
-                huntedAt: {
-                    gte: season.dateFrom,
-                    lte: season.dateTo,
-                },
-            },
+            where: whereClause,
             include: {
                 species: { select: { id: true, name: true } },
                 huntingLocality: { select: { id: true, name: true } },

@@ -27,6 +27,11 @@ interface Season {
     isActive: boolean;
 }
 
+interface Member {
+    id: string;
+    displayName: string;
+}
+
 interface GroupedCatches {
     speciesId: string;
     speciesName: string;
@@ -37,8 +42,12 @@ export default function CatchesListPage() {
     const { data: session, status } = useSession();
     const [catches, setCatches] = useState<Catch[]>([]);
     const [seasons, setSeasons] = useState<Season[]>([]);
+    const [members, setMembers] = useState<Member[]>([]);
     const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
+    const [selectedMemberId, setSelectedMemberId] = useState<string>('');
     const [loading, setLoading] = useState(true);
+
+    const isAdmin = session?.user?.role === 'ADMIN';
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -49,14 +58,17 @@ export default function CatchesListPage() {
     useEffect(() => {
         if (session?.user) {
             loadSeasons();
+            if (isAdmin) {
+                loadMembers();
+            }
         }
-    }, [session]);
+    }, [session, isAdmin]);
 
     useEffect(() => {
         if (selectedSeasonId) {
-            loadCatches(selectedSeasonId);
+            loadCatches(selectedSeasonId, selectedMemberId);
         }
-    }, [selectedSeasonId]);
+    }, [selectedSeasonId, selectedMemberId]);
 
     async function loadSeasons() {
         try {
@@ -78,10 +90,24 @@ export default function CatchesListPage() {
         }
     }
 
-    async function loadCatches(seasonId: string) {
+    async function loadMembers() {
+        try {
+            const res = await fetch('/api/members');
+            const data = await res.json();
+            setMembers(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error('Failed to load members:', error);
+        }
+    }
+
+    async function loadCatches(seasonId: string, memberId?: string) {
         try {
             setLoading(true);
-            const res = await fetch(`/api/catches?seasonId=${seasonId}`);
+            let url = `/api/catches?seasonId=${seasonId}`;
+            if (memberId) {
+                url += `&memberId=${memberId}`;
+            }
+            const res = await fetch(url);
             const data = await res.json();
             setCatches(Array.isArray(data) ? data : []);
         } catch (error) {
@@ -146,6 +172,24 @@ export default function CatchesListPage() {
                             {seasons.map((s) => (
                                 <option key={s.id} value={s.id}>
                                     {s.name} {s.isActive ? '(aktívna)' : ''}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
+                {/* Member Filter - Admin only */}
+                {isAdmin && members.length > 0 && (
+                    <div className="form-group" style={{ marginBottom: 'var(--spacing-4)' }}>
+                        <select
+                            className="form-select"
+                            value={selectedMemberId}
+                            onChange={(e) => setSelectedMemberId(e.target.value)}
+                        >
+                            <option value="">Všetci členovia</option>
+                            {members.map((m) => (
+                                <option key={m.id} value={m.id}>
+                                    {m.displayName}
                                 </option>
                             ))}
                         </select>
