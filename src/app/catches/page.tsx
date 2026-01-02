@@ -58,11 +58,9 @@ export default function CatchesListPage() {
     useEffect(() => {
         if (session?.user) {
             loadSeasons();
-            if (isAdmin) {
-                loadMembers();
-            }
+            loadMembers();
         }
-    }, [session, isAdmin]);
+    }, [session]);
 
     useEffect(() => {
         if (selectedSeasonId) {
@@ -161,11 +159,24 @@ export default function CatchesListPage() {
             </header>
 
             <div className="page-content">
-                {/* Season Selector */}
-                {seasons.length > 0 && (
-                    <div className="form-group" style={{ marginBottom: 'var(--spacing-4)' }}>
+                {/* Filters Row */}
+                <div style={{
+                    display: 'flex',
+                    gap: 'var(--spacing-2)',
+                    marginBottom: 'var(--spacing-4)',
+                    flexWrap: 'wrap'
+                }}>
+                    {/* Season Selector */}
+                    {seasons.length > 0 && (
                         <select
-                            className="form-select"
+                            style={{
+                                flex: 1,
+                                fontSize: 'var(--font-size-sm)',
+                                padding: 'var(--spacing-2) var(--spacing-3)',
+                                border: '1px solid var(--color-gray-300)',
+                                borderRadius: 'var(--radius-lg)',
+                                background: 'var(--color-white)'
+                            }}
                             value={selectedSeasonId}
                             onChange={(e) => setSelectedSeasonId(e.target.value)}
                         >
@@ -175,14 +186,19 @@ export default function CatchesListPage() {
                                 </option>
                             ))}
                         </select>
-                    </div>
-                )}
+                    )}
 
-                {/* Member Filter - Admin only */}
-                {isAdmin && members.length > 0 && (
-                    <div className="form-group" style={{ marginBottom: 'var(--spacing-4)' }}>
+                    {/* Member Filter */}
+                    {members.length > 0 && (
                         <select
-                            className="form-select"
+                            style={{
+                                flex: 1,
+                                fontSize: 'var(--font-size-sm)',
+                                padding: 'var(--spacing-2) var(--spacing-3)',
+                                border: '1px solid var(--color-gray-300)',
+                                borderRadius: 'var(--radius-lg)',
+                                background: 'var(--color-white)'
+                            }}
                             value={selectedMemberId}
                             onChange={(e) => setSelectedMemberId(e.target.value)}
                         >
@@ -193,8 +209,8 @@ export default function CatchesListPage() {
                                 </option>
                             ))}
                         </select>
-                    </div>
-                )}
+                    )}
+                </div>
 
                 {loading ? (
                     <div style={{ textAlign: 'center', padding: 'var(--spacing-8)' }}>
