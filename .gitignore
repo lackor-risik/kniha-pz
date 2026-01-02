@@ -46,3 +46,6 @@ data/uploads/*
 .vscode/
 *.swp
 *.swo
+
+# Data files
+Navstevy.xlsx

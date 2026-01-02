@@ -196,6 +196,39 @@ img {
   background: var(--color-gray-50);
 }
 
+/* Tables */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--spacing-3) var(--spacing-4);
+  text-align: left;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.table th {
+  font-weight: 600;
+  color: var(--color-gray-700);
+  background: var(--color-gray-50);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: var(--color-gray-50);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
