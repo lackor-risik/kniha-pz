@@ -32,6 +32,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         }
 
         const endDate = new Date(validation.data.endDate);
+        const note = validation.data.note;
 
         // Validate end_date >= start_date
         if (endDate < visit.startDate) {
@@ -54,7 +55,10 @@ export async function POST(request: NextRequest, { params }: Params) {
 
         const updated = await prisma.visit.update({
             where: { id },
-            data: { endDate },
+            data: {
+                endDate,
+                ...(note !== undefined && { note }),
+            },
             include: {
                 member: { select: { id: true, displayName: true } },
                 locality: { select: { id: true, name: true } },

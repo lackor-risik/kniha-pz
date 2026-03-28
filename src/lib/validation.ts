@@ -78,6 +78,7 @@ export const visitUpdateSchema = z.object({
 
 export const visitEndSchema = z.object({
     endDate: z.string().datetime({ message: 'Neplatný dátum ukončenia' }),
+    note: z.string().max(1000).optional(),
 });
 
 // ============================================================================

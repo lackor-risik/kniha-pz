@@ -47,6 +47,7 @@ export default function VisitDetailPage() {
     const [error, setError] = useState('');
     const [showEndModal, setShowEndModal] = useState(false);
     const [endDateTime, setEndDateTime] = useState('');
+    const [endNote, setEndNote] = useState('');
     const [showGuestModal, setShowGuestModal] = useState(false);
     const [guestName, setGuestName] = useState('');
     const [addingGuest, setAddingGuest] = useState(false);
@@ -90,6 +91,7 @@ export default function VisitDetailPage() {
             .toISOString()
             .slice(0, 16);
         setEndDateTime(localDateTime);
+        setEndNote(visit?.note || '');
         setShowEndModal(true);
     }
 
@@ -118,7 +120,10 @@ export default function VisitDetailPage() {
             const res = await fetch(`/api/visits/${visitId}/end`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ endDate: endDate.toISOString() }),
+                body: JSON.stringify({
+                    endDate: endDate.toISOString(),
+                    note: endNote || undefined,
+                }),
             });
 
             const data = await res.json();
@@ -385,6 +390,16 @@ export default function VisitDetailPage() {
                                 <p className="form-hint">
                                     Maximálne teraz ({new Date().toLocaleString('sk', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })})
                                 </p>
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Poznámka</label>
+                                <textarea
+                                    className="form-textarea"
+                                    value={endNote}
+                                    onChange={(e) => setEndNote(e.target.value)}
+                                    placeholder="Poznámka k návšteve..."
+                                    rows={3}
+                                />
                             </div>
                         </div>
                         <div className="modal-footer">
