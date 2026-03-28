@@ -39,9 +39,14 @@ export default function EditSeasonPage() {
     const [season, setSeason] = useState<Season | null>(null);
     const [harvestPlan, setHarvestPlan] = useState<HarvestPlanItem[]>([]);
     const [speciesList, setSpeciesList] = useState<Species[]>([]);
+    const [allSeasons, setAllSeasons] = useState<Season[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [showCopyModal, setShowCopyModal] = useState(false);
+    const [copying, setCopying] = useState(false);
+    const [copyMode, setCopyMode] = useState<'new' | 'existing'>('new');
+    const [selectedTargetSeasonId, setSelectedTargetSeasonId] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingItem, setEditingItem] = useState<HarvestPlanItem | null>(null);
 
@@ -58,6 +63,13 @@ export default function EditSeasonPage() {
         note: '',
     });
 
+    const [copyFormData, setCopyFormData] = useState({
+        name: '',
+        dateFrom: '',
+        dateTo: '',
+        isActive: false,
+    });
+
     useEffect(() => {
         if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
             router.push('/');
@@ -72,10 +84,11 @@ export default function EditSeasonPage() {
 
     async function loadData() {
         try {
-            const [seasonRes, harvestRes, speciesRes] = await Promise.all([
+            const [seasonRes, harvestRes, speciesRes, seasonsRes] = await Promise.all([
                 fetch(`/api/seasons/${seasonId}`),
                 fetch(`/api/seasons/${seasonId}/harvest-plan`),
                 fetch('/api/species'),
+                fetch('/api/seasons'),
             ]);
 
             if (!seasonRes.ok) {
@@ -86,10 +99,12 @@ export default function EditSeasonPage() {
             const seasonData = await seasonRes.json();
             const harvestData = await harvestRes.json();
             const speciesData = await speciesRes.json();
+            const seasonsData = await seasonsRes.json();
 
             setSeason(seasonData);
             setHarvestPlan(harvestData.harvestPlan || []);
             setSpeciesList(speciesData);
+            setAllSeasons(seasonsData.filter((s: Season) => s.id !== seasonId));
             setFormData({
                 name: seasonData.name,
                 dateFrom: seasonData.dateFrom.split('T')[0],
@@ -211,6 +226,90 @@ export default function EditSeasonPage() {
         setShowAddForm(false);
         setEditingItem(null);
         setPlanFormData({ speciesId: '', plannedCount: 0, note: '' });
+    }
+
+    function openCopyModal() {
+        // Smart defaults: increment year in name and dates
+        const currentName = formData.name || '';
+        const yearMatch = currentName.match(/(\d{4})\s*\/\s*(\d{4})/);
+        let newName = '';
+        let newDateFrom = '';
+        let newDateTo = '';
+
+        if (yearMatch) {
+            const y1 = parseInt(yearMatch[1]) + 1;
+            const y2 = parseInt(yearMatch[2]) + 1;
+            newName = currentName.replace(yearMatch[0], `${y1}/${y2}`);
+        } else {
+            newName = currentName + ' (kópia)';
+        }
+
+        if (formData.dateFrom) {
+            const d = new Date(formData.dateFrom);
+            d.setFullYear(d.getFullYear() + 1);
+            newDateFrom = d.toISOString().split('T')[0];
+        }
+        if (formData.dateTo) {
+            const d = new Date(formData.dateTo);
+            d.setFullYear(d.getFullYear() + 1);
+            newDateTo = d.toISOString().split('T')[0];
+        }
+
+        setCopyFormData({
+            name: newName,
+            dateFrom: newDateFrom,
+            dateTo: newDateTo,
+            isActive: false,
+        });
+        setCopyMode('new');
+        setSelectedTargetSeasonId('');
+        setShowCopyModal(true);
+    }
+
+    async function handleCopy(e: React.FormEvent) {
+        e.preventDefault();
+        setError('');
+        setCopying(true);
+
+        try {
+            let requestBody: Record<string, unknown>;
+
+            if (copyMode === 'existing') {
+                if (!selectedTargetSeasonId) {
+                    setError('Vyberte cieľovú sezónu');
+                    setCopying(false);
+                    return;
+                }
+                requestBody = { targetSeasonId: selectedTargetSeasonId };
+            } else {
+                requestBody = {
+                    name: copyFormData.name,
+                    dateFrom: new Date(copyFormData.dateFrom).toISOString(),
+                    dateTo: new Date(copyFormData.dateTo).toISOString(),
+                    isActive: copyFormData.isActive,
+                };
+            }
+
+            const res = await fetch(`/api/seasons/${seasonId}/copy`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setError(data.error || 'Chyba pri kopírovaní');
+                setCopying(false);
+                return;
+            }
+
+            // Navigate to the target season
+            router.push(`/admin/seasons/${data.id}`);
+        } catch (error) {
+            setError('Chyba pripojenia k serveru');
+            setCopying(false);
+        }
     }
 
     // Filter species not already in plan (unless editing that species)
@@ -420,6 +519,166 @@ export default function EditSeasonPage() {
                         </div>
                     )}
                 </div>
+
+                {/* Copy Harvest Plan Button */}
+                {harvestPlan.length > 0 && (
+                    <div style={{ marginTop: 'var(--spacing-4)', textAlign: 'center' }}>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={openCopyModal}
+                            style={{ gap: 'var(--spacing-2)' }}
+                        >
+                            📋 Kopírovať plán do inej sezóny
+                        </button>
+                    </div>
+                )}
+
+                {/* Copy Modal */}
+                {showCopyModal && (
+                    <div className="modal-overlay" onClick={() => setShowCopyModal(false)}>
+                        <div className="card" onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '420px', margin: 'auto' }}>
+                            <div className="card-header">
+                                <strong>📋 Kopírovať plán lovu</strong>
+                            </div>
+                            <form onSubmit={handleCopy}>
+                                <div className="card-body">
+                                    <p style={{ color: 'var(--color-gray-500)', fontSize: '0.875rem', marginBottom: 'var(--spacing-3)' }}>
+                                        Skopíruje sa {harvestPlan.length} položiek plánu lovu.
+                                        {copyMode === 'existing'
+                                            ? ' Existujúce položky v cieľovej sezóne sa prepíšu.'
+                                            : ' Počty odlovených kusov sa vynulujú.'}
+                                    </p>
+
+                                    {/* Mode Toggle */}
+                                    <div className="form-group">
+                                        <label className="form-label">Cieľ kopírovania</label>
+                                        <div style={{ display: 'flex', gap: '0', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--color-gray-200)' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setCopyMode('new')}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: 'var(--spacing-2) var(--spacing-3)',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: 500,
+                                                    background: copyMode === 'new' ? 'var(--color-primary)' : 'var(--color-gray-50)',
+                                                    color: copyMode === 'new' ? 'white' : 'var(--color-gray-600)',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                            >
+                                                ✨ Nová sezóna
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setCopyMode('existing')}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: 'var(--spacing-2) var(--spacing-3)',
+                                                    border: 'none',
+                                                    borderLeft: '1px solid var(--color-gray-200)',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: 500,
+                                                    background: copyMode === 'existing' ? 'var(--color-primary)' : 'var(--color-gray-50)',
+                                                    color: copyMode === 'existing' ? 'white' : 'var(--color-gray-600)',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                            >
+                                                📅 Existujúca sezóna
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {copyMode === 'existing' ? (
+                                        /* Existing Season Selector */
+                                        <div className="form-group">
+                                            <label className="form-label form-label-required">Cieľová sezóna</label>
+                                            {allSeasons.length === 0 ? (
+                                                <p style={{ color: 'var(--color-gray-400)', fontSize: '0.875rem' }}>
+                                                    Žiadne iné sezóny nie sú k dispozícii.
+                                                </p>
+                                            ) : (
+                                                <select
+                                                    className="form-select"
+                                                    value={selectedTargetSeasonId}
+                                                    onChange={(e) => setSelectedTargetSeasonId(e.target.value)}
+                                                    required
+                                                >
+                                                    <option value="">Vyberte sezónu...</option>
+                                                    {allSeasons.map((s) => (
+                                                        <option key={s.id} value={s.id}>
+                                                            {s.name} {s.isActive ? '(aktívna)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        /* New Season Form */
+                                        <>
+                                            <div className="form-group">
+                                                <label className="form-label form-label-required">Názov novej sezóny</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={copyFormData.name}
+                                                    onChange={(e) => setCopyFormData({ ...copyFormData, name: e.target.value })}
+                                                    required
+                                                    autoFocus
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label form-label-required">Od</label>
+                                                <input
+                                                    type="date"
+                                                    className="form-input"
+                                                    value={copyFormData.dateFrom}
+                                                    onChange={(e) => setCopyFormData({ ...copyFormData, dateFrom: e.target.value })}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label form-label-required">Do</label>
+                                                <input
+                                                    type="date"
+                                                    className="form-input"
+                                                    value={copyFormData.dateTo}
+                                                    onChange={(e) => setCopyFormData({ ...copyFormData, dateTo: e.target.value })}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-switch">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={copyFormData.isActive}
+                                                        onChange={(e) => setCopyFormData({ ...copyFormData, isActive: e.target.checked })}
+                                                    />
+                                                    <span className="form-switch-toggle"></span>
+                                                    <span>Nastaviť ako aktívnu sezónu</span>
+                                                </label>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="card-footer" style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary"
+                                        disabled={copying || (copyMode === 'existing' && allSeasons.length === 0)}
+                                    >
+                                        {copying ? <span className="spinner"></span> : '📋 Kopírovať'}
+                                    </button>
+                                    <button type="button" className="btn btn-secondary" onClick={() => setShowCopyModal(false)}>
+                                        Zrušiť
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <BottomNav />

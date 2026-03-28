@@ -9,7 +9,7 @@ Mobilná PWA aplikácia na evidenciu poľovného revíru, návštev, úlovkov, o
 
 - **Návštevy revíru** - evidencia príchodov a odchodov členov z lokalít
 - **Úlovky** - záznam úlovkov s podrobnými informáciami a fotkami (fullscreen prehliadanie)
-- **Plán lovu** - sledovanie sezónnych kvót a čerpania
+- **Plán lovu** - sledovanie sezónnych kvót a čerpania, kopírovanie plánu do novej alebo existujúcej sezóny
 - **Oznamy** - zdieľanie informácií s push notifikáciami a rich text editorom (formátovanie, obrázky)
 - **Rezervácie chaty** - kalendár rezervácií poľovníckej chaty
 - **Administrácia** - správa členov, lokalít, druhov zveri a sezón
@@ -313,6 +313,7 @@ npm run db:studio
 - `GET /api/seasons` - Zoznam sezón
 - `GET /api/seasons/[id]/harvest-plan` - Plán lovu so štatistikami
 - `PUT /api/seasons/[id]/harvest-plan` - Upraviť plán (Admin)
+- `POST /api/seasons/[id]/copy` - Kopírovať plán lovu do novej alebo existujúcej sezóny (Admin)
 
 ### Oznamy
 - `GET /api/announcements` - Zoznam oznámov
