@@ -48,4 +48,4 @@ data/uploads/*
 *.swo
 
 # Data files
-Navstevy.xlsx
+*.xlsx
