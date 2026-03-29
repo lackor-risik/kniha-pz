@@ -35,6 +35,16 @@ interface Catch {
     _count: { photos: number };
 }
 
+interface Locality {
+    id: string;
+    name: string;
+}
+
+interface Member {
+    id: string;
+    displayName: string;
+}
+
 export default function VisitDetailPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
@@ -52,8 +62,12 @@ export default function VisitDetailPage() {
     const [guestName, setGuestName] = useState('');
     const [addingGuest, setAddingGuest] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [editData, setEditData] = useState({ note: '', hasGuest: false, guestName: '', guestNote: '' });
+    const [editData, setEditData] = useState<Record<string, unknown>>({ note: '', hasGuest: false, guestName: '', guestNote: '' });
     const [saving, setSaving] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [localities, setLocalities] = useState<Locality[]>([]);
+    const [members, setMembers] = useState<Member[]>([]);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -76,6 +90,16 @@ export default function VisitDetailPage() {
             }
             const data = await res.json();
             setVisit(data);
+
+            // Load admin data (localities + members) if admin
+            if (session?.user?.role === 'ADMIN' && localities.length === 0) {
+                const [locRes, memRes] = await Promise.all([
+                    fetch('/api/localities'),
+                    fetch('/api/members'),
+                ]);
+                if (locRes.ok) setLocalities(await locRes.json());
+                if (memRes.ok) setMembers(await memRes.json());
+            }
         } catch (error) {
             console.error('Failed to load visit:', error);
             router.push('/visits');
@@ -176,14 +200,26 @@ export default function VisitDetailPage() {
         }
     }
 
+    function toLocalDateTimeString(dateStr: string) {
+        const d = new Date(dateStr);
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    }
+
     function openEditModal() {
         if (visit) {
-            setEditData({
+            const base: Record<string, unknown> = {
                 note: visit.note || '',
                 hasGuest: visit.hasGuest,
                 guestName: visit.guestName || '',
                 guestNote: visit.guestNote || '',
-            });
+            };
+            if (session?.user?.role === 'ADMIN') {
+                base.localityId = visit.locality.id;
+                base.memberId = visit.member.id;
+                base.startDate = toLocalDateTimeString(visit.startDate);
+                base.endDate = visit.endDate ? toLocalDateTimeString(visit.endDate) : '';
+            }
+            setEditData(base);
             setShowEditModal(true);
         }
     }
@@ -193,10 +229,24 @@ export default function VisitDetailPage() {
         setError('');
 
         try {
+            const payload: Record<string, unknown> = { ...editData };
+
+            // Convert local datetime strings to ISO for admin
+            if (session?.user?.role === 'ADMIN') {
+                if (payload.startDate) {
+                    payload.startDate = new Date(payload.startDate as string).toISOString();
+                }
+                if (payload.endDate) {
+                    payload.endDate = new Date(payload.endDate as string).toISOString();
+                } else {
+                    payload.endDate = null;
+                }
+            }
+
             const res = await fetch(`/api/visits/${visitId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(editData),
+                body: JSON.stringify(payload),
             });
 
             const data = await res.json();
@@ -212,6 +262,29 @@ export default function VisitDetailPage() {
             setError('Chyba pripojenia k serveru');
         } finally {
             setSaving(false);
+        }
+    }
+
+    async function handleDeleteVisit() {
+        setDeleting(true);
+        setError('');
+
+        try {
+            const res = await fetch(`/api/visits/${visitId}`, {
+                method: 'DELETE',
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                setError(data.error || 'Chyba pri mazaní');
+                setDeleting(false);
+                return;
+            }
+
+            router.push('/visits');
+        } catch {
+            setError('Chyba pripojenia k serveru');
+            setDeleting(false);
         }
     }
 
@@ -472,11 +545,60 @@ export default function VisitDetailPage() {
                             <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
                         </div>
                         <div className="modal-body">
+                            {/* Admin-only fields */}
+                            {isAdmin && (
+                                <>
+                                    <div className="form-group">
+                                        <label className="form-label">Člen</label>
+                                        <select
+                                            className="form-select"
+                                            value={(editData.memberId as string) || ''}
+                                            onChange={(e) => setEditData({ ...editData, memberId: e.target.value })}
+                                        >
+                                            {members.map((m) => (
+                                                <option key={m.id} value={m.id}>{m.displayName}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Lokalita</label>
+                                        <select
+                                            className="form-select"
+                                            value={(editData.localityId as string) || ''}
+                                            onChange={(e) => setEditData({ ...editData, localityId: e.target.value })}
+                                        >
+                                            {localities.map((l) => (
+                                                <option key={l.id} value={l.id}>{l.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Začiatok</label>
+                                        <input
+                                            type="datetime-local"
+                                            className="form-input"
+                                            value={(editData.startDate as string) || ''}
+                                            onChange={(e) => setEditData({ ...editData, startDate: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Koniec</label>
+                                        <input
+                                            type="datetime-local"
+                                            className="form-input"
+                                            value={(editData.endDate as string) || ''}
+                                            onChange={(e) => setEditData({ ...editData, endDate: e.target.value })}
+                                        />
+                                        <p className="form-hint">Nechajte prázdne pre aktívnu návštevu</p>
+                                    </div>
+                                </>
+                            )}
+
                             <div className="form-group">
                                 <label className="form-label">Poznámka</label>
                                 <textarea
                                     className="form-textarea"
-                                    value={editData.note}
+                                    value={(editData.note as string) || ''}
                                     onChange={(e) => setEditData({ ...editData, note: e.target.value })}
                                     placeholder="Poznámka k návšteve..."
                                     rows={3}
@@ -489,7 +611,7 @@ export default function VisitDetailPage() {
                                         <label className="form-checkbox">
                                             <input
                                                 type="checkbox"
-                                                checked={editData.hasGuest}
+                                                checked={editData.hasGuest as boolean}
                                                 onChange={(e) => setEditData({ ...editData, hasGuest: e.target.checked })}
                                             />
                                             <span>S hosťom</span>
@@ -503,7 +625,7 @@ export default function VisitDetailPage() {
                                                 <input
                                                     type="text"
                                                     className="form-input"
-                                                    value={editData.guestName}
+                                                    value={(editData.guestName as string) || ''}
                                                     onChange={(e) => setEditData({ ...editData, guestName: e.target.value })}
                                                     placeholder="Meno a priezvisko"
                                                 />
@@ -513,7 +635,7 @@ export default function VisitDetailPage() {
                                                 <input
                                                     type="text"
                                                     className="form-input"
-                                                    value={editData.guestNote}
+                                                    value={(editData.guestNote as string) || ''}
                                                     onChange={(e) => setEditData({ ...editData, guestNote: e.target.value })}
                                                     placeholder="Napr. číslo povolenia"
                                                 />
@@ -523,19 +645,64 @@ export default function VisitDetailPage() {
                                 </>
                             )}
                         </div>
+                        <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowEditModal(false)}
+                                >
+                                    Zrušiť
+                                </button>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={handleSaveEdit}
+                                    disabled={saving}
+                                >
+                                    {saving ? <span className="spinner"></span> : 'Uložiť'}
+                                </button>
+                            </div>
+                            {isAdmin && (
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={() => { setShowEditModal(false); setShowDeleteModal(true); }}
+                                >
+                                    🗑️ Zmazať
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="modal-title">Zmazať návštevu</h3>
+                            <button className="modal-close" onClick={() => setShowDeleteModal(false)}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <p>Naozaj chcete zmazať túto návštevu?</p>
+                            {visit && visit.catches.length > 0 && (
+                                <div className="alert alert-error" style={{ marginTop: 'var(--spacing-3)' }}>
+                                    ⚠️ Spolu s návštevou sa zmaže aj {visit.catches.length} úlovkov a všetky ich fotky!
+                                </div>
+                            )}
+                        </div>
                         <div className="modal-footer">
                             <button
                                 className="btn btn-secondary"
-                                onClick={() => setShowEditModal(false)}
+                                onClick={() => setShowDeleteModal(false)}
                             >
                                 Zrušiť
                             </button>
                             <button
-                                className="btn btn-primary"
-                                onClick={handleSaveEdit}
-                                disabled={saving}
+                                className="btn btn-danger"
+                                onClick={handleDeleteVisit}
+                                disabled={deleting}
                             >
-                                {saving ? <span className="spinner"></span> : 'Uložiť'}
+                                {deleting ? <span className="spinner"></span> : '🗑️ Zmazať návštevu'}
                             </button>
                         </div>
                     </div>

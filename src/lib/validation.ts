@@ -76,6 +76,17 @@ export const visitUpdateSchema = z.object({
     note: z.string().max(1000).optional(),
 });
 
+export const adminVisitUpdateSchema = z.object({
+    localityId: z.string().uuid('Neplatné ID lokality').optional(),
+    memberId: z.string().uuid('Neplatné ID člena').optional(),
+    startDate: z.string().datetime({ message: 'Neplatný dátum začiatku' }).optional(),
+    endDate: z.string().datetime({ message: 'Neplatný dátum ukončenia' }).nullable().optional(),
+    hasGuest: z.boolean().optional(),
+    guestName: z.string().max(100).nullable().optional(),
+    guestNote: z.string().max(500).nullable().optional(),
+    note: z.string().max(1000).nullable().optional(),
+});
+
 export const visitEndSchema = z.object({
     endDate: z.string().datetime({ message: 'Neplatný dátum ukončenia' }),
     note: z.string().max(1000).optional(),

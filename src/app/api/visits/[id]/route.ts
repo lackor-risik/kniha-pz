@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, handleApiError, notFound, isAdmin, canAccessResource, badRequest, forbidden } from '@/lib/rbac';
-import { validateRequest, visitUpdateSchema } from '@/lib/validation';
+import { requireAuth, handleApiError, notFound, isAdmin, canAccessResource, forbidden } from '@/lib/rbac';
+import { validateRequest, visitUpdateSchema, adminVisitUpdateSchema } from '@/lib/validation';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -65,15 +65,41 @@ export async function PUT(request: NextRequest, { params }: Params) {
         }
 
         const body = await request.json();
-        const validation = validateRequest(visitUpdateSchema, body);
 
-        if (!validation.success) {
-            return NextResponse.json({ error: validation.error }, { status: 400 });
+        // Validate with appropriate schema
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let validatedData: any;
+
+        if (isAdmin(user)) {
+            const validation = validateRequest(adminVisitUpdateSchema, body);
+            if (!validation.success) {
+                return NextResponse.json({ error: validation.error }, { status: 400 });
+            }
+            validatedData = validation.data;
+        } else {
+            const validation = validateRequest(visitUpdateSchema, body);
+            if (!validation.success) {
+                return NextResponse.json({ error: validation.error }, { status: 400 });
+            }
+            validatedData = validation.data;
+        }
+
+        // Build update data
+        const data: Record<string, unknown> = { ...validatedData };
+
+        // Convert date strings to Date objects for admin
+        if (isAdmin(user)) {
+            if ('startDate' in data && data.startDate) {
+                data.startDate = new Date(data.startDate as string);
+            }
+            if ('endDate' in data && data.endDate !== undefined) {
+                data.endDate = data.endDate ? new Date(data.endDate as string) : null;
+            }
         }
 
         const updated = await prisma.visit.update({
             where: { id },
-            data: validation.data,
+            data,
             include: {
                 member: { select: { id: true, displayName: true } },
                 locality: { select: { id: true, name: true } },
@@ -95,13 +121,29 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
             return forbidden('Len administrátor môže mazať návštevy');
         }
 
-        const visit = await prisma.visit.findUnique({ where: { id } });
+        const visit = await prisma.visit.findUnique({
+            where: { id },
+            include: { catches: { include: { photos: true } } },
+        });
         if (!visit) {
             return notFound('Návšteva nebola nájdená');
         }
 
-        // Delete visit and all catches (cascade)
-        await prisma.visit.delete({ where: { id } });
+        // Delete in transaction: photos -> catches -> visit
+        await prisma.$transaction(async (tx) => {
+            // Delete all catch photos first
+            const catchIds = visit.catches.map((c) => c.id);
+            if (catchIds.length > 0) {
+                await tx.catchPhoto.deleteMany({
+                    where: { catchId: { in: catchIds } },
+                });
+                await tx.catch.deleteMany({
+                    where: { visitId: id },
+                });
+            }
+            // Delete the visit
+            await tx.visit.delete({ where: { id } });
+        });
 
         return NextResponse.json({ success: true });
     } catch (error) {
