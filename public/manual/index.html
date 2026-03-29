@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kniha PZ Skalka – Používateľský manuál</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-900: #1a3a1a;
+  --green-800: #2d5016;
+  --green-700: #3a6b20;
+  --green-600: #4a8529;
+  --green-500: #5a9e32;
+  --green-100: #e8f5e1;
+  --green-50: #f3faf0;
+  --gray-900: #111827;
+  --gray-700: #374151;
+  --gray-600: #4b5563;
+  --gray-400: #9ca3af;
+  --gray-200: #e5e7eb;
+  --gray-100: #f3f4f6;
+  --gray-50: #f9fafb;
+  --white: #ffffff;
+  --blue-600: #2563eb;
+  --blue-50: #eff6ff;
+  --orange-500: #f59e0b;
+  --orange-50: #fffbeb;
+  --red-500: #ef4444;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--gray-700);
+  line-height: 1.7;
+  background: var(--gray-50);
+}
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 50%, var(--green-600) 100%);
+  color: var(--white);
+  text-align: center;
+  padding: 80px 24px 60px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+.hero-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 6px 18px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+.hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; }
+.hero p { font-size: 1.1rem; opacity: 0.9; max-width: 500px; margin: 0 auto; }
+
+/* Container */
+.container { max-width: 820px; margin: 0 auto; padding: 0 24px; }
+
+/* Navigation */
+.toc {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 32px;
+  margin: -30px auto 40px;
+  max-width: 820px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 2;
+}
+.toc h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--green-800);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toc ol {
+  list-style: none;
+  counter-reset: toc;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+@media (max-width: 600px) { .toc ol { grid-template-columns: 1fr; } }
+.toc li { counter-increment: toc; }
+.toc a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--gray-700);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.toc a:hover { background: var(--green-50); color: var(--green-700); }
+.toc a::before {
+  content: counter(toc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--green-100);
+  color: var(--green-700);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Section */
+.section {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 40px 36px;
+  margin-bottom: 28px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  scroll-margin-top: 24px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--green-100);
+}
+.section-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--green-100);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.section-header h2 { font-size: 1.4rem; font-weight: 700; color: var(--green-900); }
+.section-header p { font-size: 0.9rem; color: var(--gray-400); margin-top: 2px; }
+
+/* Content */
+h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 28px 0 12px;
+}
+h3:first-of-type { margin-top: 0; }
+p { margin-bottom: 14px; font-size: 0.95rem; }
+.img-frame {
+  text-align: center;
+  margin: 24px 0;
+}
+.img-frame img {
+  max-width: 320px;
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  border: 1px solid var(--gray-200);
+}
+.img-frame figcaption {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+/* Step list */
+.steps { list-style: none; counter-reset: step; margin: 16px 0; }
+.steps li {
+  counter-increment: step;
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.95rem;
+  align-items: flex-start;
+}
+.steps li:last-child { border-bottom: none; }
+.steps li::before {
+  content: counter(step);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  background: var(--green-600);
+  color: var(--white);
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Tip box */
+.tip, .warning {
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin: 18px 0;
+  font-size: 0.9rem;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.tip { background: var(--blue-50); border-left: 4px solid var(--blue-600); }
+.warning { background: var(--orange-50); border-left: 4px solid var(--orange-500); }
+.tip-icon, .warning-icon { font-size: 20px; flex-shrink: 0; }
+
+/* Platform tabs */
+.platform-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 20px 0 16px;
+}
+.platform-tab {
+  flex: 1;
+  text-align: center;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: 2px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-600);
+  transition: all 0.2s;
+}
+.platform-tab.active, .platform-tab:hover {
+  border-color: var(--green-600);
+  background: var(--green-50);
+  color: var(--green-700);
+}
+.platform-content { display: none; }
+.platform-content.active { display: block; }
+
+/* Feature grid */
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+@media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+.feature-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+}
+.feature-card .emoji { font-size: 28px; }
+.feature-card .label { font-size: 0.9rem; font-weight: 600; color: var(--gray-900); }
+.feature-card .desc { font-size: 0.8rem; color: var(--gray-400); }
+
+/* Nav bar illustration */
+.nav-illustration {
+  display: flex;
+  justify-content: space-around;
+  background: var(--white);
+  border: 2px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 14px 8px;
+  margin: 20px 0;
+}
+.nav-item {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--gray-400);
+  font-weight: 500;
+}
+.nav-item.active { color: var(--green-600); }
+.nav-item .icon { font-size: 22px; margin-bottom: 2px; }
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--gray-400);
+  font-size: 0.85rem;
+}
+.footer a { color: var(--green-600); text-decoration: none; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .hero h1 { font-size: 1.8rem; }
+  .section { padding: 28px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">📖 Používateľský manuál</div>
+    <h1>Kniha PZ Skalka</h1>
+    <p>Kompletný sprievodca mobilnou aplikáciou pre členov poľovníckeho združenia</p>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="container">
+<nav class="toc">
+  <h2>📋 Obsah</h2>
+  <ol>
+    <li><a href="#instalacia">Inštalácia aplikácie (PWA)</a></li>
+    <li><a href="#prihlasenie">Prihlásenie</a></li>
+    <li><a href="#dashboard">Domovská stránka</a></li>
+    <li><a href="#navigacia">Navigácia v aplikácii</a></li>
+    <li><a href="#navstevy">Návštevy revíru</a></li>
+    <li><a href="#ulovky">Úlovky</a></li>
+    <li><a href="#plan-lovu">Plán lovu</a></li>
+    <li><a href="#oznamy">Oznamy</a></li>
+    <li><a href="#chata">Rezervácie chaty</a></li>
+    <li><a href="#nastavenia">Nastavenia a profil</a></li>
+  </ol>
+</nav>
+</div>
+
+<!-- 1. Inštalácia -->
+<div class="container">
+<section class="section" id="instalacia">
+  <div class="section-header">
+    <div class="section-icon">📲</div>
+    <div>
+      <h2>Inštalácia aplikácie (PWA)</h2>
+      <p>Nainštalujte si aplikáciu na telefón</p>
+    </div>
+  </div>
+  <p>Kniha PZ je <strong>progresívna webová aplikácia (PWA)</strong> — funguje priamo v prehliadači, ale dá sa nainštalovať na plochu telefónu ako bežná aplikácia. Po inštalácii sa otvára v celoobrazovkovom režime a je k dispozícii aj s obmedzeným pripojením.</p>
+
+  <div class="platform-tabs">
+    <div class="platform-tab active" onclick="showPlatform('android')">🤖 Android</div>
+    <div class="platform-tab" onclick="showPlatform('ios')">🍎 iOS (iPhone/iPad)</div>
+  </div>
+
+  <div id="platform-android" class="platform-content active">
+    <h3>Inštalácia na Android</h3>
+    <ol class="steps">
+      <li>Otvorte prehliadač <strong>Google Chrome</strong> na vašom Android zariadení.</li>
+      <li>Prejdite na adresu aplikácie, ktorú vám poskytol administrátor (napr. <code>https://vasa-domena.sk</code>).</li>
+      <li>Chrome automaticky zobrazí banner <strong>„Pridať na plochu"</strong> v dolnej časti obrazovky. Kliknite naň.</li>
+      <li>Ak sa banner nezobrazí, kliknite na <strong>⋮ (tri bodky)</strong> v pravom hornom rohu prehliadača.</li>
+      <li>Vyberte možnosť <strong>„Pridať na plochu"</strong> alebo <strong>„Nainštalovať aplikáciu"</strong>.</li>
+      <li>Potvrďte inštaláciu kliknutím na <strong>„Inštalovať"</strong>.</li>
+      <li>Ikona aplikácie sa objaví na domovskej obrazovke vášho telefónu.</li>
+    </ol>
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>Po inštalácii sa aplikácia otvára v celoobrazovkovom režime bez adresného riadku prehliadača, rovnako ako natívna aplikácia.</div>
+    </div>
+  </div>
+
+  <div id="platform-ios" class="platform-content">
+    <h3>Inštalácia na iPhone / iPad</h3>
+    <ol class="steps">
+      <li>Otvorte prehliadač <strong>Safari</strong> na vašom iPhone alebo iPade. <em>(Inštalácia PWA funguje iba v Safari!)</em></li>
+      <li>Prejdite na adresu aplikácie, ktorú vám poskytol administrátor.</li>
+      <li>Kliknite na ikonu <strong>Zdieľania</strong> (štvorcová ikona so šípkou nahor) v dolnej lište prehliadača.</li>
+      <li>Scrollujte nadol a vyberte <strong>„Na plochu"</strong> (Add to Home Screen).</li>
+      <li>Ponechajte názov aplikácie alebo ho upravte a kliknite <strong>„Pridať"</strong>.</li>
+      <li>Ikona aplikácie sa objaví na domovskej obrazovke.</li>
+    </ol>
+    <div class="warning">
+      <span class="warning-icon">⚠️</span>
+      <div><strong>Dôležité:</strong> Na iOS je nutné použiť prehliadač <strong>Safari</strong>. Chrome ani iné prehliadače na iPhone nepodporujú inštaláciu PWA na plochu.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Prihlásenie -->
+<section class="section" id="prihlasenie">
+  <div class="section-header">
+    <div class="section-icon">🔑</div>
+    <div>
+      <h2>Prihlásenie</h2>
+      <p>Ako sa prihlásiť do aplikácie</p>
+    </div>
+  </div>
+  <p>Prístup do aplikácie majú iba <strong>registrovaní členovia</strong> poľovníckeho združenia. Váš účet vytvára administrátor.</p>
+
+  <h3>Prihlásenie e-mailom a heslom</h3>
+  <ol class="steps">
+    <li>Otvorte aplikáciu alebo prejdite na adresu v prehliadači.</li>
+    <li>Na prihlasovacej obrazovke zadajte svoj <strong>e-mail</strong> a <strong>heslo</strong>, ktoré vám pridelil administrátor.</li>
+    <li>Kliknite na tlačidlo <strong>„Prihlásiť sa"</strong>.</li>
+  </ol>
+  <figure class="img-frame">
+    <img src="img/01-login.png" alt="Prihlasovacia obrazovka">
+    <figcaption>Prihlasovacia obrazovka aplikácie</figcaption>
+  </figure>
+
+  <h3>Prihlásenie cez Google</h3>
+  <p>Ak máte priradený Google účet, môžete sa prihlásiť aj kliknutím na tlačidlo <strong>„Prihlásiť sa cez Google"</strong>.</p>
+
+  <div class="tip">
+    <span class="tip-icon">💡</span>
+    <div>Pri prvom prihlásení vás systém môže vyzvať na <strong>zmenu hesla</strong>. Zadajte nové heslo podľa pokynov na obrazovke.</div>
+  </div>
+</section>
+
+<!-- 3. Dashboard -->
+<section class="section" id="dashboard">
+  <div class="section-header">
+    <div class="section-icon">🏠</div>
+    <div>
+      <h2>Domovská stránka</h2>
+      <p>Prehľad po prihlásení</p>
+    </div>
+  </div>
+  <p>Po úspešnom prihlásení sa zobrazí domovská stránka s prehľadom najdôležitejších informácií:</p>
+
+  <figure class="img-frame">
+    <img src="img/02-dashboard.png" alt="Domovská stránka">
+    <figcaption>Domovská stránka po prihlásení</figcaption>
+  </figure>
+
+  <div class="feature-grid">
+    <div class="feature-card"><span class="emoji">📅</span><div><div class="label">Aktuálna sezóna</div><div class="desc">Názov a dátumy aktuálnej poľovníckej sezóny</div></div></div>
+    <div class="feature-card"><span class="emoji">📍</span><div><div class="label">Aktívna návšteva</div><div class="desc">Ak máte práve prebiehajúcu návštevu, zobrazí sa tu</div></div></div>
+    <div class="feature-card"><span class="emoji">👥</span><div><div class="label">Členovia v revíri</div><div class="desc">Koľko členov je aktuálne v revíri</div></div></div>
+    <div class="feature-card"><span class="emoji">📢</span><div><div class="label">Neprečítané oznamy</div><div class="desc">Počet nových neprecítaných oznámov</div></div></div>
+  </div>
+
+  <p>V sekcii <strong>Rýchle akcie</strong> nájdete skratky k najpoužívanejším funkciám: Moje návštevy, Úlovky, Plán lovu a Rezervácie chaty.</p>
+</section>
+
+<!-- 4. Navigácia -->
+<section class="section" id="navigacia">
+  <div class="section-header">
+    <div class="section-icon">🧭</div>
+    <div>
+      <h2>Navigácia v aplikácii</h2>
+      <p>Ako sa pohybovať medzi stránkami</p>
+    </div>
+  </div>
+  <p>V dolnej časti obrazovky sa nachádza <strong>navigačný panel</strong> s piatimi hlavnými sekciami:</p>
+  <div class="nav-illustration">
+    <div class="nav-item active"><div class="icon">🏠</div>Domov</div>
+    <div class="nav-item"><div class="icon">📍</div>Návštevy</div>
+    <div class="nav-item"><div class="icon">🎯</div>Úlovky</div>
+    <div class="nav-item"><div class="icon">📊</div>Plán</div>
+    <div class="nav-item"><div class="icon">🔔</div>Oznamy</div>
+  </div>
+  <p>Kliknutím na ikonu sa presuniete do príslušnej sekcie. Aktívna sekcia je zvýraznená zelenou farbou. Na ikone <strong>Oznamy</strong> sa zobrazuje červený badge s počtom neprečítaných oznámov.</p>
+  <div class="tip">
+    <span class="tip-icon">💡</span>
+    <div>Na niektorých stránkach nájdete v pravom dolnom rohu <strong>zelené okrúhle tlačidlo „+"</strong> — slúži na rýchle pridanie nového záznamu (návšteva, rezervácia atď.).</div>
+  </div>
+</section>
+
+<!-- 5. Návštevy -->
+<section class="section" id="navstevy">
+  <div class="section-header">
+    <div class="section-icon">🗺️</div>
+    <div>
+      <h2>Návštevy revíru</h2>
+      <p>Evidencia príchodov a odchodov</p>
+    </div>
+  </div>
+  <p>Sekcia Návštevy slúži na evidenciu vašich príchodov do revíru a odchodov z neho. Každá návšteva je priradená ku konkrétnej <strong>lokalite</strong>.</p>
+
+  <figure class="img-frame">
+    <img src="img/03-visits.png" alt="Zoznam návštev">
+    <figcaption>Prehľad návštev s filtrami</figcaption>
+  </figure>
+
+  <h3>Filtre návštev</h3>
+  <p>V hornej časti stránky sú tri záložky na filtrovanie:</p>
+  <ul class="steps">
+    <li><strong>Všetky</strong> — zobrazí návštevy všetkých členov.</li>
+    <li><strong>Aktívne</strong> — iba aktuálne prebiehajúce návštevy (členovia práve v revíri).</li>
+    <li><strong>Moje</strong> — iba vaše vlastné návštevy.</li>
+  </ul>
+
+  <h3>Začatie novej návštevy</h3>
+  <p>Na začatie návštevy kliknite na zelené tlačidlo <strong>„+"</strong> alebo na tlačidlo <strong>„+ Začať návštevu"</strong> na domovskej stránke.</p>
+  <figure class="img-frame">
+    <img src="img/04-new-visit.png" alt="Formulár novej návštevy">
+    <figcaption>Formulár pre začatie novej návštevy</figcaption>
+  </figure>
+
+  <p>Vo formulári vyplňte:</p>
+  <ul class="steps">
+    <li><strong>Lokalita</strong> — vyberte lokalitu z dostupných (obsadené lokality sú neprístupné).</li>
+    <li><strong>Dátum a čas začiatku</strong> — predvolený je aktuálny čas, môžete upraviť max. 4 hodiny dopredu.</li>
+    <li><strong>Mám hosťa</strong> — prepnutím zapnete formulár pre údaje hosťa (meno, poznámka).</li>
+    <li><strong>Poznámka</strong> — voliteľná poznámka k návšteve.</li>
+  </ul>
+
+  <h3>Ukončenie návštevy</h3>
+  <p>Na stránke detailu návštevy kliknite na tlačidlo <strong>„Ukončiť návštevu"</strong>. Návštevu je možné ukončiť aj s úpravou poznámok. Neukončené návštevy sa automaticky uzatvárajú o polnoci.</p>
+
+  <h3>Pridanie úlovku k návšteve</h3>
+  <p>Z detailu aktívnej návštevy kliknite na tlačidlo <strong>„Pridať úlovok"</strong>. Vyplňte druh zveri, lokalitu lovu, dátum a prípadne nahrajte fotky.</p>
+</section>
+
+<!-- 6. Úlovky -->
+<section class="section" id="ulovky">
+  <div class="section-header">
+    <div class="section-icon">🎯</div>
+    <div>
+      <h2>Úlovky</h2>
+      <p>Prehľad úlovkov za sezónu</p>
+    </div>
+  </div>
+  <p>Na stránke Úlovky nájdete kompletný prehľad všetkých úlovkov za vybranú sezónu, zoskupených podľa <strong>druhu zveri</strong>.</p>
+
+  <figure class="img-frame">
+    <img src="img/05-catches.png" alt="Zoznam úlovkov">
+    <figcaption>Prehľad úlovkov s filtrom sezóny</figcaption>
+  </figure>
+
+  <h3>Filtrovanie</h3>
+  <p>Na filtrácii môžete zmeniť:</p>
+  <ul class="steps">
+    <li><strong>Sezóna</strong> — prepnúť medzi aktuálnou a predchádzajúcimi sezónami.</li>
+    <li><strong>Člen</strong> — filtrovať úlovky podľa člena (ak je k dispozícii).</li>
+  </ul>
+
+  <h3>Detail úlovku</h3>
+  <p>Kliknutím na konkrétny úlovok sa dostanete na jeho detail, kde uvidíte všetky informácie vrátane nahraných <strong>fotografií</strong>. Fotografie je možné prezerať vo fullscreen galérii.</p>
+</section>
+
+<!-- 7. Plán lovu -->
+<section class="section" id="plan-lovu">
+  <div class="section-header">
+    <div class="section-icon">📊</div>
+    <div>
+      <h2>Plán lovu</h2>
+      <p>Sezónne kvóty a čerpanie</p>
+    </div>
+  </div>
+  <p>Plán lovu zobrazuje tabuľku s <strong>plánovanými kvótami</strong> pre jednotlivé druhy zveri a ich aktuálne čerpanie.</p>
+
+  <figure class="img-frame">
+    <img src="img/06-harvest-plan.png" alt="Plán lovu">
+    <figcaption>Tabuľka plánu lovu s kvótami</figcaption>
+  </figure>
+
+  <p>Tabuľka obsahuje stĺpce:</p>
+  <ul class="steps">
+    <li><strong>Druh</strong> — názov druhu zveri.</li>
+    <li><strong>Plán</strong> — plánovaný počet kusov na sezónu.</li>
+    <li><strong>Odlovené</strong> — aktuálne odlovený počet.</li>
+    <li><strong>Zostáva</strong> — koľko kusov ešte zostáva. Ak je kvóta prekročená, riadok sa zvýrazní červenou farbou.</li>
+  </ul>
+
+  <div class="warning">
+    <span class="warning-icon">⚠️</span>
+    <div>Ak je pri nejakom druhu zobrazená <strong>červená farba</strong>, znamená to, že kvóta bola prekročená. Informujte sa u hospodára o ďalšom postupe.</div>
+  </div>
+</section>
+
+<!-- 8. Oznamy -->
+<section class="section" id="oznamy">
+  <div class="section-header">
+    <div class="section-icon">📢</div>
+    <div>
+      <h2>Oznamy</h2>
+      <p>Informácie a novinky z revíru</p>
+    </div>
+  </div>
+  <p>V sekcii Oznamy nájdete dôležité informácie zdieľané administrátorom a ostatnými členmi.</p>
+
+  <figure class="img-frame">
+    <img src="img/07-announcements.png" alt="Oznamy">
+    <figcaption>Stránka Oznamy</figcaption>
+  </figure>
+
+  <ul class="steps">
+    <li><strong>Neprečítané oznamy</strong> sú zvýraznené tučným písmom a modrou bodkou.</li>
+    <li><strong>Pripnuté oznamy</strong> (📌) sú vždy zobrazené na vrchu zoznamu.</li>
+    <li>Kliknutím na oznam sa zobrazí jeho <strong>plný text</strong>, vrátane obrázkov a formátovania.</li>
+    <li>Počet neprečítaných oznámov sa zobrazuje aj na <strong>ikone Oznamy</strong> v dolnom navigačnom paneli.</li>
+  </ul>
+
+  <div class="tip">
+    <span class="tip-icon">💡</span>
+    <div>Ak máte povolené push notifikácie, budete dostávať upozornenia na nové oznamy aj keď nemáte aplikáciu otvorenú.</div>
+  </div>
+</section>
+
+<!-- 9. Chata -->
+<section class="section" id="chata">
+  <div class="section-header">
+    <div class="section-icon">🏠</div>
+    <div>
+      <h2>Rezervácie chaty</h2>
+      <p>Kalendár a správa rezervácií</p>
+    </div>
+  </div>
+  <p>Sekcia Rezervácie chaty umožňuje prezerať a vytvárať rezervácie poľovníckej chaty.</p>
+
+  <figure class="img-frame">
+    <img src="img/08-cabin.png" alt="Kalendár rezervácií chaty">
+    <figcaption>Kalendár s rezerváciami chaty</figcaption>
+  </figure>
+
+  <h3>Kalendár</h3>
+  <p>Kalendár zobrazuje aktuálny mesiac. Dni s rezerváciou sú označené <strong>zelenou bodkou</strong>. Šípkami sa prepínate medzi mesiacmi. Dnešný deň je zvýraznený.</p>
+
+  <h3>Vytvorenie rezervácie</h3>
+  <ol class="steps">
+    <li>Kliknite na <strong>voľný deň</strong> v kalendári alebo na zelené tlačidlo <strong>„+"</strong>.</li>
+    <li>Zobrazí sa dialóg — kliknite <strong>„Pokračovať"</strong>.</li>
+    <li>Vyplňte <strong>dátum ukončenia</strong>, voliteľný <strong>názov</strong> rezervácie a potvrďte.</li>
+  </ol>
+
+  <h3>Zrušenie rezervácie</h3>
+  <p>Kliknutím na <strong>deň s rezerváciou</strong> alebo zo zoznamu nadchádzajúcich rezervácií sa dostanete na detail, kde môžete vlastnú rezerváciu <strong>zrušiť</strong>.</p>
+</section>
+
+<!-- 10. Nastavenia -->
+<section class="section" id="nastavenia">
+  <div class="section-header">
+    <div class="section-icon">⚙️</div>
+    <div>
+      <h2>Nastavenia a profil</h2>
+      <p>Správa profilu a hesla</p>
+    </div>
+  </div>
+  <p>Do nastavení sa dostanete kliknutím na <strong>váš avatar a meno</strong> v hornej časti domovskej stránky.</p>
+
+  <figure class="img-frame">
+    <img src="img/09-settings.png" alt="Nastavenia profilu">
+    <figcaption>Stránka nastavení profilu</figcaption>
+  </figure>
+
+  <p>V nastaveniach nájdete:</p>
+  <ul class="steps">
+    <li><strong>Profil</strong> — vaše meno, e-mail a rola (Člen / Administrátor).</li>
+    <li><strong>Zmeniť heslo</strong> — aktualizujte svoje prihlasovacie heslo zadaním aktuálneho a nového hesla.</li>
+    <li><strong>Odhlásiť sa</strong> — ukončí aktuálnu reláciu. Môžete sa odhlásiť aj z domovskej stránky tlačidlom 🚪&nbsp;Odhlásiť.</li>
+  </ul>
+
+  <div class="tip">
+    <span class="tip-icon">💡</span>
+    <div>Odporúčame si pri prvom prihlásení <strong>zmeniť heslo</strong> na vlastné — bezpečné heslo by malo mať aspoň 8 znakov.</div>
+  </div>
+</section>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>© 2026 Kniha PZ Skalka &nbsp;|&nbsp; <a href="/">Späť do aplikácie</a></p>
+  <p style="margin-top: 8px; font-size: 0.8rem;">Verzia manuálu: 1.0 &nbsp;|&nbsp; Posledná aktualizácia: Marec 2026</p>
+</footer>
+
+<script>
+function showPlatform(platform) {
+  document.querySelectorAll('.platform-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.platform-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('platform-' + platform).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
