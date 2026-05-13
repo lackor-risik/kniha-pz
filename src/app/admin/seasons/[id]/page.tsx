@@ -5,6 +5,103 @@ import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/BottomNav';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    TouchSensor,
+    MouseSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core';
+import {
+    SortableContext,
+    arrayMove,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+function SortableHarvestPlanItem({ 
+    item, 
+    startEditItem, 
+    disabled 
+}: { 
+    item: HarvestPlanItem; 
+    startEditItem: (item: HarvestPlanItem) => void;
+    disabled: boolean;
+}) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ 
+        id: item.id,
+        disabled
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+        zIndex: isDragging ? 10 : 0,
+        position: 'relative' as const,
+        touchAction: 'none'
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} className="list-item">
+            {/* Drag Handle */}
+            <span
+                {...attributes}
+                {...listeners}
+                style={{
+                    fontSize: '18px',
+                    cursor: disabled ? 'default' : 'grab',
+                    color: 'var(--color-gray-400)',
+                    userSelect: 'none',
+                    display: disabled ? 'none' : 'flex',
+                    alignItems: 'center',
+                    padding: '0 4px',
+                    flexShrink: 0,
+                }}
+                title="Ťahajte pre zmenu poradia"
+            >
+                ☰
+            </span>
+            <span style={{ fontSize: '24px', flexShrink: 0 }}>🎯</span>
+            <div
+                className="list-item-content"
+                onClick={() => startEditItem(item)}
+                style={{ cursor: 'pointer' }}
+            >
+                <div className="list-item-title">{item.species.name}</div>
+                <div className="list-item-subtitle">
+                    Plán: {item.plannedCount} | Ulovené: {item.takenCount} | Zostáva: {item.remainingCount}
+                </div>
+                <div style={{ marginTop: 'var(--spacing-2)' }}>
+                    <div className="progress" style={{ height: '6px' }}>
+                        <div
+                            className={`progress-bar ${item.exceeded ? 'exceeded' : ''}`}
+                            style={{ width: `${Math.min(item.percentage, 100)}%` }}
+                        />
+                    </div>
+                </div>
+                {item.note && (
+                    <div className="list-item-subtitle" style={{ marginTop: 'var(--spacing-1)' }}>
+                        📝 {item.note}
+                    </div>
+                )}
+            </div>
+            <span
+                className="list-item-arrow"
+                onClick={() => startEditItem(item)}
+                style={{ cursor: 'pointer' }}
+            >
+                ✏️
+            </span>
+        </div>
+    );
+}
 
 interface Season {
     id: string;
@@ -49,8 +146,6 @@ export default function EditSeasonPage() {
     const [selectedTargetSeasonId, setSelectedTargetSeasonId] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingItem, setEditingItem] = useState<HarvestPlanItem | null>(null);
-    const [dragIndex, setDragIndex] = useState<number | null>(null);
-    const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
     const [reordering, setReordering] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -231,64 +326,57 @@ export default function EditSeasonPage() {
         setPlanFormData({ speciesId: '', plannedCount: 0, note: '' });
     }
 
-    // Drag and drop handlers
-    function handleDragStart(index: number) {
-        setDragIndex(index);
-    }
+    const sensors = useSensors(
+        useSensor(MouseSensor, {
+            activationConstraint: {
+                distance: 5, // Require 5px movement before drag starts
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250, // Require 250ms hold before drag starts
+                tolerance: 5, // Allow 5px movement during the delay
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
-    function handleDragOver(e: React.DragEvent, index: number) {
-        e.preventDefault();
-        if (dragIndex === null || dragIndex === index) return;
-        setDragOverIndex(index);
-    }
+    async function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
 
-    function handleDragLeave() {
-        setDragOverIndex(null);
-    }
+        if (over && active.id !== over.id) {
+            const oldIndex = harvestPlan.findIndex((item) => item.id === active.id);
+            const newIndex = harvestPlan.findIndex((item) => item.id === over.id);
 
-    async function handleDrop(index: number) {
-        if (dragIndex === null || dragIndex === index) {
-            setDragIndex(null);
-            setDragOverIndex(null);
-            return;
-        }
+            const reordered = arrayMove(harvestPlan, oldIndex, newIndex);
+            setHarvestPlan(reordered);
 
-        const reordered = [...harvestPlan];
-        const [movedItem] = reordered.splice(dragIndex, 1);
-        reordered.splice(index, 0, movedItem);
-
-        setHarvestPlan(reordered);
-        setDragIndex(null);
-        setDragOverIndex(null);
-
-        // Save new order to server
-        setReordering(true);
-        try {
-            const res = await fetch(`/api/seasons/${seasonId}/harvest-plan/reorder`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    items: reordered.map((item, i) => ({ id: item.id, sortOrder: i })),
-                }),
-            });
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data.error || 'Chyba pri zmene poradia');
-                // Reload to get original order
-                const harvestRes = await fetch(`/api/seasons/${seasonId}/harvest-plan`);
-                const harvestData = await harvestRes.json();
-                setHarvestPlan(harvestData.harvestPlan || []);
+            // Save new order to server
+            setReordering(true);
+            try {
+                const res = await fetch(`/api/seasons/${seasonId}/harvest-plan/reorder`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: reordered.map((item, i) => ({ id: item.id, sortOrder: i })),
+                    }),
+                });
+                if (!res.ok) {
+                    const data = await res.json();
+                    setError(data.error || 'Chyba pri zmene poradia');
+                    // Reload to get original order
+                    const harvestRes = await fetch(`/api/seasons/${seasonId}/harvest-plan`);
+                    const harvestData = await harvestRes.json();
+                    setHarvestPlan(harvestData.harvestPlan || []);
+                }
+            } catch {
+                setError('Chyba pripojenia k serveru');
+            } finally {
+                setReordering(false);
             }
-        } catch {
-            setError('Chyba pripojenia k serveru');
-        } finally {
-            setReordering(false);
         }
-    }
-
-    function handleDragEnd() {
-        setDragIndex(null);
-        setDragOverIndex(null);
     }
 
     function openCopyModal() {
@@ -566,80 +654,25 @@ export default function EditSeasonPage() {
                                     <div className="spinner"></div>
                                 </div>
                             )}
-                            {harvestPlan.map((item, index) => (
-                                <div
-                                    key={item.id}
-                                    draggable={!showAddForm}
-                                    onDragStart={() => handleDragStart(index)}
-                                    onDragOver={(e) => handleDragOver(e, index)}
-                                    onDragLeave={handleDragLeave}
-                                    onDrop={() => handleDrop(index)}
-                                    onDragEnd={handleDragEnd}
-                                    className="list-item"
-                                    style={{
-                                        cursor: showAddForm ? 'pointer' : 'grab',
-                                        transition: 'transform 0.15s ease, background 0.15s ease, border-color 0.15s ease',
-                                        opacity: dragIndex === index ? 0.4 : 1,
-                                        borderTop: dragOverIndex === index && dragIndex !== null && dragIndex > index
-                                            ? '3px solid var(--color-primary)'
-                                            : undefined,
-                                        borderBottom: dragOverIndex === index && dragIndex !== null && dragIndex < index
-                                            ? '3px solid var(--color-primary)'
-                                            : undefined,
-                                        background: dragOverIndex === index
-                                            ? 'var(--color-primary-light, rgba(34,139,34,0.06))'
-                                            : undefined,
-                                    }}
+                            <DndContext 
+                                sensors={sensors} 
+                                collisionDetection={closestCenter} 
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext 
+                                    items={harvestPlan.map(i => i.id)} 
+                                    strategy={verticalListSortingStrategy}
                                 >
-                                    {/* Drag Handle */}
-                                    <span
-                                        style={{
-                                            fontSize: '18px',
-                                            cursor: 'grab',
-                                            color: 'var(--color-gray-400)',
-                                            userSelect: 'none',
-                                            display: showAddForm ? 'none' : 'flex',
-                                            alignItems: 'center',
-                                            padding: '0 4px',
-                                            flexShrink: 0,
-                                        }}
-                                        title="Ťahajte pre zmenu poradia"
-                                    >
-                                        ☰
-                                    </span>
-                                    <span style={{ fontSize: '24px', flexShrink: 0 }}>🎯</span>
-                                    <div
-                                        className="list-item-content"
-                                        onClick={() => startEditItem(item)}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <div className="list-item-title">{item.species.name}</div>
-                                        <div className="list-item-subtitle">
-                                            Plán: {item.plannedCount} | Ulovené: {item.takenCount} | Zostáva: {item.remainingCount}
-                                        </div>
-                                        <div style={{ marginTop: 'var(--spacing-2)' }}>
-                                            <div className="progress" style={{ height: '6px' }}>
-                                                <div
-                                                    className={`progress-bar ${item.exceeded ? 'exceeded' : ''}`}
-                                                    style={{ width: `${Math.min(item.percentage, 100)}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                        {item.note && (
-                                            <div className="list-item-subtitle" style={{ marginTop: 'var(--spacing-1)' }}>
-                                                📝 {item.note}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <span
-                                        className="list-item-arrow"
-                                        onClick={() => startEditItem(item)}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        ✏️
-                                    </span>
-                                </div>
-                            ))}
+                                    {harvestPlan.map((item) => (
+                                        <SortableHarvestPlanItem
+                                            key={item.id}
+                                            item={item}
+                                            startEditItem={startEditItem}
+                                            disabled={showAddForm}
+                                        />
+                                    ))}
+                                </SortableContext>
+                            </DndContext>
                         </div>
                     )}
                 </div>
