@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/BottomNav';
 
@@ -49,6 +49,9 @@ export default function EditSeasonPage() {
     const [selectedTargetSeasonId, setSelectedTargetSeasonId] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingItem, setEditingItem] = useState<HarvestPlanItem | null>(null);
+    const [dragIndex, setDragIndex] = useState<number | null>(null);
+    const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+    const [reordering, setReordering] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -226,6 +229,66 @@ export default function EditSeasonPage() {
         setShowAddForm(false);
         setEditingItem(null);
         setPlanFormData({ speciesId: '', plannedCount: 0, note: '' });
+    }
+
+    // Drag and drop handlers
+    function handleDragStart(index: number) {
+        setDragIndex(index);
+    }
+
+    function handleDragOver(e: React.DragEvent, index: number) {
+        e.preventDefault();
+        if (dragIndex === null || dragIndex === index) return;
+        setDragOverIndex(index);
+    }
+
+    function handleDragLeave() {
+        setDragOverIndex(null);
+    }
+
+    async function handleDrop(index: number) {
+        if (dragIndex === null || dragIndex === index) {
+            setDragIndex(null);
+            setDragOverIndex(null);
+            return;
+        }
+
+        const reordered = [...harvestPlan];
+        const [movedItem] = reordered.splice(dragIndex, 1);
+        reordered.splice(index, 0, movedItem);
+
+        setHarvestPlan(reordered);
+        setDragIndex(null);
+        setDragOverIndex(null);
+
+        // Save new order to server
+        setReordering(true);
+        try {
+            const res = await fetch(`/api/seasons/${seasonId}/harvest-plan/reorder`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items: reordered.map((item, i) => ({ id: item.id, sortOrder: i })),
+                }),
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                setError(data.error || 'Chyba pri zmene poradia');
+                // Reload to get original order
+                const harvestRes = await fetch(`/api/seasons/${seasonId}/harvest-plan`);
+                const harvestData = await harvestRes.json();
+                setHarvestPlan(harvestData.harvestPlan || []);
+            }
+        } catch {
+            setError('Chyba pripojenia k serveru');
+        } finally {
+            setReordering(false);
+        }
+    }
+
+    function handleDragEnd() {
+        setDragIndex(null);
+        setDragOverIndex(null);
     }
 
     function openCopyModal() {
@@ -485,16 +548,71 @@ export default function EditSeasonPage() {
                             </p>
                         </div>
                     ) : (
-                        <div>
-                            {harvestPlan.map((item) => (
+                        <div style={{ position: 'relative' }}>
+                            {reordering && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    background: 'rgba(255,255,255,0.6)',
+                                    zIndex: 10,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: 'var(--radius-md)',
+                                }}>
+                                    <div className="spinner"></div>
+                                </div>
+                            )}
+                            {harvestPlan.map((item, index) => (
                                 <div
                                     key={item.id}
+                                    draggable={!showAddForm}
+                                    onDragStart={() => handleDragStart(index)}
+                                    onDragOver={(e) => handleDragOver(e, index)}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={() => handleDrop(index)}
+                                    onDragEnd={handleDragEnd}
                                     className="list-item"
-                                    onClick={() => startEditItem(item)}
-                                    style={{ cursor: 'pointer' }}
+                                    style={{
+                                        cursor: showAddForm ? 'pointer' : 'grab',
+                                        transition: 'transform 0.15s ease, background 0.15s ease, border-color 0.15s ease',
+                                        opacity: dragIndex === index ? 0.4 : 1,
+                                        borderTop: dragOverIndex === index && dragIndex !== null && dragIndex > index
+                                            ? '3px solid var(--color-primary)'
+                                            : undefined,
+                                        borderBottom: dragOverIndex === index && dragIndex !== null && dragIndex < index
+                                            ? '3px solid var(--color-primary)'
+                                            : undefined,
+                                        background: dragOverIndex === index
+                                            ? 'var(--color-primary-light, rgba(34,139,34,0.06))'
+                                            : undefined,
+                                    }}
                                 >
-                                    <span style={{ fontSize: '24px' }}>🎯</span>
-                                    <div className="list-item-content">
+                                    {/* Drag Handle */}
+                                    <span
+                                        style={{
+                                            fontSize: '18px',
+                                            cursor: 'grab',
+                                            color: 'var(--color-gray-400)',
+                                            userSelect: 'none',
+                                            display: showAddForm ? 'none' : 'flex',
+                                            alignItems: 'center',
+                                            padding: '0 4px',
+                                            flexShrink: 0,
+                                        }}
+                                        title="Ťahajte pre zmenu poradia"
+                                    >
+                                        ☰
+                                    </span>
+                                    <span style={{ fontSize: '24px', flexShrink: 0 }}>🎯</span>
+                                    <div
+                                        className="list-item-content"
+                                        onClick={() => startEditItem(item)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
                                         <div className="list-item-title">{item.species.name}</div>
                                         <div className="list-item-subtitle">
                                             Plán: {item.plannedCount} | Ulovené: {item.takenCount} | Zostáva: {item.remainingCount}
@@ -513,7 +631,13 @@ export default function EditSeasonPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <span className="list-item-arrow">✏️</span>
+                                    <span
+                                        className="list-item-arrow"
+                                        onClick={() => startEditItem(item)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        ✏️
+                                    </span>
                                 </div>
                             ))}
                         </div>

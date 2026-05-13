@@ -62,12 +62,14 @@ export async function POST(request: NextRequest, { params }: Params) {
                         update: {
                             plannedCount: item.plannedCount,
                             note: item.note,
+                            sortOrder: item.sortOrder,
                         },
                         create: {
                             seasonId: targetSeasonId,
                             speciesId: item.speciesId,
                             plannedCount: item.plannedCount,
                             note: item.note,
+                            sortOrder: item.sortOrder,
                         },
                     });
                 }
@@ -120,6 +122,7 @@ export async function POST(request: NextRequest, { params }: Params) {
                     speciesId: item.speciesId,
                     plannedCount: item.plannedCount,
                     note: item.note,
+                    sortOrder: item.sortOrder,
                 })),
             });
 

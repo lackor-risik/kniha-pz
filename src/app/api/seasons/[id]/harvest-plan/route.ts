@@ -17,6 +17,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
                     include: {
                         species: { select: { id: true, name: true } },
                     },
+                    orderBy: { sortOrder: 'asc' },
                 },
             },
         });
@@ -103,6 +104,13 @@ export async function POST(request: NextRequest, { params }: Params) {
             return NextResponse.json({ error: 'Druh zveri neexistuje' }, { status: 400 });
         }
 
+        // Calculate next sortOrder for new items
+        const maxOrder = await prisma.harvestPlanItem.aggregate({
+            where: { seasonId: id },
+            _max: { sortOrder: true },
+        });
+        const nextSortOrder = (maxOrder._max.sortOrder ?? -1) + 1;
+
         // Upsert harvest plan item
         const item = await prisma.harvestPlanItem.upsert({
             where: {
@@ -117,6 +125,7 @@ export async function POST(request: NextRequest, { params }: Params) {
                 speciesId,
                 plannedCount,
                 note,
+                sortOrder: nextSortOrder,
             },
             include: {
                 species: { select: { id: true, name: true } },
