@@ -144,6 +144,27 @@ Pre HTTPS prístup cez Synology:
 | PostgreSQL databáza | `/volume1/docker/kniha-pz/data/postgres/` |
 | Nahrané fotky | `/volume1/docker/kniha-pz/data/uploads/` |
 
+### Automatický deploy
+
+Repo obsahuje `scripts/deploy-synology.sh`, ktorý cez SSH zálohuje databázu, stiahne
+najnovší `main`, prebuildne a reštartuje kontajnery a overí health-check:
+
+```bash
+npm run deploy
+```
+
+Predpoklady (jednorazové nastavenie):
+- Bezheslový SSH kľúč pridaný do `~/.ssh/authorized_keys` na NAS
+- Passwordless `sudo` pre `docker`/`docker-compose` pre daného SSH používateľa (Synology
+  nemá samostatnú `docker` skupinu, socket je `root:root`):
+  ```bash
+  sudo visudo -f /etc/sudoers.d/kniha-pz-deploy
+  # obsah: <user> ALL=(root) NOPASSWD: /usr/local/bin/docker-compose, /usr/local/bin/docker
+  ```
+
+Konfigurácia (env premenné, ak sa líšia od predvolených):
+`NAS_HOST`, `NAS_PORT`, `NAS_USER`, `NAS_PATH`, `SSH_KEY`.
+
 ### Užitočné príkazy
 
 ```bash
