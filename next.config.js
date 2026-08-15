@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
+    // Disable auto-generated AGENTS.md/CLAUDE.md (Next.js 16 agentRules feature) -
+    // we don't want them recreated on every `next dev` start.
+    agentRules: false,
     experimental: {
         serverActions: {
             bodySizeLimit: '10mb',
