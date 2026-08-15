@@ -201,4 +201,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         maxAge: 30 * 24 * 60 * 60, // 30 days
     },
     secret: process.env.NEXTAUTH_SECRET,
+    // Self-hosted behind a reverse proxy (Synology) - NextAuth v5 rejects requests
+    // with "UntrustedHost" unless explicitly told to trust the incoming Host header.
+    // Safe here since NEXTAUTH_URL/reverse proxy already pin the expected domain.
+    trustHost: true,
 });
