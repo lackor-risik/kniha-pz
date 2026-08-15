@@ -1,6 +1,5 @@
-import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
-import { authOptions } from './auth';
+import { auth } from './auth';
 
 export type AuthenticatedUser = {
     id: string;
@@ -48,7 +47,7 @@ export function serverError(message = 'Interná chyba servera'): NextResponse {
  * Returns null if not authenticated
  */
 export async function getAuthUser(): Promise<AuthenticatedUser | null> {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
         return null;

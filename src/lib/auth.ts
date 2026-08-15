@@ -1,4 +1,4 @@
-import { NextAuthOptions } from 'next-auth';
+import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
@@ -16,14 +16,14 @@ declare module 'next-auth' {
     }
 }
 
-declare module 'next-auth/jwt' {
+declare module '@auth/core/jwt' {
     interface JWT {
         id: string;
         role: 'ADMIN' | 'MEMBER';
     }
 }
 
-export const authOptions: NextAuthOptions = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
                 const member = await prisma.member.findFirst({
                     where: {
                         email: {
-                            equals: credentials.email,
+                            equals: credentials.email as string,
                             mode: 'insensitive',
                         },
                     },
@@ -58,7 +58,7 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 const isValidPassword = await bcrypt.compare(
-                    credentials.password,
+                    credentials.password as string,
                     member.passwordHash
                 );
 
@@ -201,4 +201,4 @@ export const authOptions: NextAuthOptions = {
         maxAge: 30 * 24 * 60 * 60, // 30 days
     },
     secret: process.env.NEXTAUTH_SECRET,
-};
+});
