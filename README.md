@@ -1,7 +1,7 @@
 # Kniha PZ - Evidencia poľovného revíru
 
 [![Release](https://img.shields.io/badge/release-v1.0.0-green.svg)](https://github.com/lackor-risik/kniha-pz/releases/tag/v1.0.0)
-[![Next.js](https://img.shields.io/badge/Next.js-16.1-black.svg)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-black.svg)](https://nextjs.org/)
 
 Mobilná PWA aplikácia na evidenciu poľovného revíru, návštev, úlovkov, oznámenia a rezervácie chaty.
 
@@ -10,6 +10,7 @@ Mobilná PWA aplikácia na evidenciu poľovného revíru, návštev, úlovkov, o
 - **Návštevy revíru** - evidencia príchodov a odchodov členov z lokalít
 - **Úlovky** - záznam úlovkov s podrobnými informáciami a fotkami (fullscreen prehliadanie)
 - **Plán lovu** - sledovanie sezónnych kvót a čerpania, vlastné poradie položiek (drag & drop), kopírovanie plánu do novej alebo existujúcej sezóny
+- **Export sezóny do Excelu** - admin môže exportovať všetky návštevy a úlovky vybranej sezóny do prehľadného `.xlsx` súboru (súhrn, návštevy, úlovky)
 - **Oznamy** - zdieľanie informácií s push notifikáciami a rich text editorom (formátovanie, obrázky)
 - **Rezervácie chaty** - kalendár rezervácií poľovníckej chaty
 - **Administrácia** - správa členov, lokalít, druhov zveri a sezón
@@ -228,6 +229,11 @@ Aplikácia je Progressive Web App a môže byť nainštalovaná na:
 
 Členovia musia byť vytvorení adminom pred prvým prihlásením.
 
+Prihlasovanie beží na **NextAuth v5 (Auth.js beta)** - Google OAuth aj email/heslo
+(credentials provider). NextAuth v5 ešte nemá stabilné vydanie; migrácia z v4 bola nutná
+kvôli kritickej zraniteľnosti v `@auth/core`, ktorá v4 vetve nemala opravu kompatibilnú
+s Next.js 16.
+
 ## 📁 Štruktúra projektu
 
 ```
@@ -235,7 +241,8 @@ kniha-pz/
 ├── prisma/
 │   ├── schema.prisma      # Databázová schéma
 │   ├── migrations/        # Databázové migrácie
-│   └── seed.ts            # Seed dáta
+│   ├── seed.ts            # Seed dáta (lokality, druhy, sezóna...)
+│   └── seed-test-data.ts  # Generovanie testovacích dát pre QA
 ├── src/
 │   ├── app/               # Next.js App Router
 │   │   ├── api/           # API endpointy
@@ -276,7 +283,14 @@ npm start
 
 # Prisma Studio (GUI pre databázu)
 npm run db:studio
+
+# Vygenerovanie testovacích dát (členovia, návštevy, plán lovu, úlovky)
+npm run db:seed-test-data
 ```
+
+> `db:seed-test-data` je bezpečné spúšťať opakovane - pred generovaním zmaže predchádzajúce
+> testovacie dáta (členov s emailom `@test.local` a všetko, čo vlastnia). Heslo pre všetkých
+> vygenerovaných členov je `test123`.
 
 ## 📊 API Endpointy
 
@@ -316,6 +330,7 @@ npm run db:studio
 - `PUT /api/seasons/[id]/harvest-plan/reorder` - Zmeniť poradie položiek plánu (Admin)
 - `DELETE /api/seasons/[id]/harvest-plan/[itemId]` - Odstrániť položku plánu (Admin)
 - `POST /api/seasons/[id]/copy` - Kopírovať plán lovu do novej alebo existujúcej sezóny (Admin)
+- `GET /api/seasons/[id]/export` - Export návštev a úlovkov sezóny do Excelu (Admin)
 
 ### Oznamy
 - `GET /api/announcements` - Zoznam oznámov
