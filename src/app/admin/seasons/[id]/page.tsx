@@ -481,12 +481,22 @@ export default function EditSeasonPage() {
     return (
         <div className="page">
             <header className="page-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-3)' }}>
-                    <Link href="/admin/seasons" className="btn btn-ghost btn-icon">←</Link>
-                    <div>
-                        <h1 className="page-title">Upraviť sezónu</h1>
-                        <p className="page-subtitle">{season.name}</p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--spacing-3)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-3)' }}>
+                        <Link href="/admin/seasons" className="btn btn-ghost btn-icon">←</Link>
+                        <div>
+                            <h1 className="page-title">Upraviť sezónu</h1>
+                            <p className="page-subtitle">{season.name}</p>
+                        </div>
                     </div>
+                    <a
+                        href={`/api/seasons/${seasonId}/export`}
+                        className="btn btn-secondary btn-sm"
+                        style={{ gap: 'var(--spacing-2)', whiteSpace: 'nowrap' }}
+                        download
+                    >
+                        📊 Export do Excelu
+                    </a>
                 </div>
             </header>
 
