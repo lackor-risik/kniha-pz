@@ -50,3 +50,7 @@ data/uploads/*
 
 # Data files
 *.xlsx
+
+# logs
+error.log
+*.log

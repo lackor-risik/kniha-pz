@@ -183,7 +183,7 @@ export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): {
     const result = schema.safeParse(data);
 
     if (!result.success) {
-        const errors = result.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`);
+        const errors = result.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`);
         return { success: false, error: errors.join(', ') };
     }
 

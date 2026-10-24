@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sanitizeRichText } from '@/lib/sanitize';
 import { unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
@@ -75,7 +76,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
         // Only admin can change pinned status
         const updateData: Record<string, unknown> = {};
         if (title) updateData.title = title;
-        if (announcementBody) updateData.body = announcementBody;
+        if (announcementBody) updateData.body = sanitizeRichText(announcementBody);
         if (isAdmin(user) && pinned !== undefined) updateData.pinned = pinned;
 
         const updated = await prisma.announcement.update({

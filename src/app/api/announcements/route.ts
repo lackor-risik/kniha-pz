@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth, handleApiError, isAdmin } from '@/lib/rbac';
 import { validateRequest, announcementCreateSchema } from '@/lib/validation';
 import { notifyNewAnnouncement } from '@/lib/push';
+import { sanitizeRichText } from '@/lib/sanitize';
 
 export async function GET(request: NextRequest) {
     try {
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
             data: {
                 authorId: user.id,
                 title,
-                body: announcementBody,
+                body: sanitizeRichText(announcementBody),
                 pinned: isPinned,
             },
             include: {

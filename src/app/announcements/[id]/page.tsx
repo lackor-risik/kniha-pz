@@ -1,5 +1,6 @@
 'use client';
 
+import { sanitizeRichText } from '@/lib/sanitize';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -121,7 +122,7 @@ export default function AnnouncementDetailPage() {
                     <div className="card-body">
                         <div
                             className="announcement-body"
-                            dangerouslySetInnerHTML={{ __html: announcement.body }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeRichText(announcement.body) }}
                         />
                     </div>
                 </div>
